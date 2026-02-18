@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Context path="/chollotek">
+  <Resource 
+      auth="Container" 
+      driverClassName="com.mysql.cj.jdbc.Driver" 
+      maxActive="100" 
+      maxIdle="30" 
+      maxWait="10000" 
+      name="jdbc/chollotek" 
+      password="12345678" 
+      type="javax.sql.DataSource" 
+      url="jdbc:mysql://localhost:3306/chollotek" 
+      username="chollotek"/>
+</Context>
