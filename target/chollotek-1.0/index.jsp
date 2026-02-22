@@ -4,16 +4,17 @@
     Author     : Alba
 --%>
 
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"  prefix="fmt" %>
+<jsp:directive.page contentType="text/html" pageEncoding="UTF-8"/>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<c:url var="estilo" value="/CSS/estilo.css" scope="application" />
+<c:set var="contexto" value="${pageContext.request.contextPath}" scope="application"/>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chollotek — Tu PC Despega</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/estilo.css" />
+  <jsp:include page="/INC/cabecera.jsp">
+            <jsp:param name="titulo" value="Chollotek" />
+            <jsp:param name="estilo" value="${estilo}" />
+        </jsp:include>
 </head>
 <body>
 
@@ -35,7 +36,7 @@
     <div class="hero">
       <div class="hero-content">
         <h1>¡Tu PC Despega<br/>con <span>Chollotek!</span></h1>
-        <p>te ayudamos a elegir los mejores componentes para tu PC con comparativas reales, asesoramiento y precios que marcan la diferencia.</p>
+        <p>Asesora de productos y comparte con nosotros comparaciones a las páginas que goes here.</p>
         <a href="#ofertas" class="btn-primary">Ver ofertas 🔥 Aquí</a>
       </div>
     </div>
@@ -163,35 +164,7 @@
     </div>
   </section>
 
-  <!-- ══════════════════════════════════════════
-       MODAL DE PRODUCTO (único, reutilizable)
-  ══════════════════════════════════════════════ -->
-  <div class="modal-overlay" id="modalOverlay" onclick="cerrarModalOverlay(event)">
-    <div class="modal" id="modalProducto">
-
-      <button class="modal-close" onclick="cerrarModal()" title="Cerrar">✕</button>
-
-      <div class="modal-img">
-        <span id="modalIcono">🎧</span>
-      </div>
-
-      <div class="modal-body">
-        <div class="modal-marca"  id="modalMarca">Marca</div>
-        <div class="modal-nombre" id="modalNombre">Nombre del producto</div>
-        <div class="modal-desc"   id="modalDesc">Descripción del producto.</div>
-        <div class="modal-precio" id="modalPrecio">0,00 €</div>
-
-        <div class="modal-actions">
-          <button class="modal-btn-buy" onclick="comprarDesdeModal()">
-            🛒 Añadir al carrito
-          </button>
-          <button class="modal-btn-close" onclick="cerrarModal()">Cerrar</button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
+ 
   <!-- FOOTER -->
   <footer>
     <div class="footer-left">
@@ -205,41 +178,6 @@
       <a href="#">Política de cookies</a>
     </div>
   </footer>
-
-  <script>
-    let _idProductoActual = null;
-
-    function abrirModal(icono, nombre, marca, descripcion, precio, idProducto) {
-      _idProductoActual = idProducto;
-      document.getElementById('modalIcono').textContent  = icono;
-      document.getElementById('modalNombre').textContent = nombre;
-      document.getElementById('modalMarca').textContent  = marca;
-      document.getElementById('modalDesc').textContent   = descripcion;
-      document.getElementById('modalPrecio').textContent =
-        precio.toFixed(2).replace('.', ',') + ' €';
-      document.getElementById('modalOverlay').classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function cerrarModal() {
-      document.getElementById('modalOverlay').classList.remove('active');
-      document.body.style.overflow = '';
-      _idProductoActual = null;
-    }
-
-    function cerrarModalOverlay(e) {
-      if (e.target === document.getElementById('modalOverlay')) cerrarModal();
-    }
-
-    function comprarDesdeModal() {
-      if (_idProductoActual === null) return;
-      window.location = '${pageContext.request.contextPath}/CarritoServlet?accion=agregar&idProducto=' + _idProductoActual;
-    }
-
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') cerrarModal();
-    });
-  </script>
 
 </body>
 </html>

@@ -4,17 +4,17 @@
     Author     : Alba
 --%>
 
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"  prefix="fmt" %>
+<jsp:directive.page contentType="text/html" pageEncoding="UTF-8"/>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<c:url var="estilo" value="/CSS/estilo.css" scope="application" />
+<c:set var="contexto" value="${pageContext.request.contextPath}" scope="application"/>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chollotek — Mis pedidos</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css" />
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pedidos.css" />
+        <jsp:include page="/INC/cabecera.jsp">
+            <jsp:param name="titulo" value="Chollotek" />
+            <jsp:param name="estilo" value="${estilo}" />
+        </jsp:include>
 </head>
 <body>
 
