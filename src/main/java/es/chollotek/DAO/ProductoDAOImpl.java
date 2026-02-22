@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,203 +18,186 @@ import java.util.logging.Logger;
  */
 public class ProductoDAOImpl implements ProductoDAO {
 
+    private static final Logger logger = Logger.getLogger(ProductoDAOImpl.class.getName());
+
     @Override
-    public List<Producto> getProductosLanding() {
-        List<Producto> listaProductos = new ArrayList<>();
-        String sql = "SELECT * FROM productos ORDER BY RAND() LIMIT 8";
-
-        Connection conexion = null;
-        PreparedStatement preparada = null;
-        ResultSet resultado = null;
-
-        try {
-            conexion = ConnectionFactory.getConnection();
-            preparada = conexion.prepareStatement(sql);
-            resultado = preparada.executeQuery();
-
-            while (resultado.next()) {
-                Producto producto = new Producto();
-
-                producto.setIdproducto(resultado.getShort("idproducto"));
-                producto.setIdcategoria(resultado.getByte("idcategoria"));
-                producto.setNombre(resultado.getString("nombre"));
-                producto.setDescripcion(resultado.getString("descripcion"));
-                producto.setPrecio(resultado.getBigDecimal("precio"));
-                producto.setMarca(resultado.getString("marca"));
-
-                String img = resultado.getString("imagen");
-                if (img == null || img.trim().isEmpty()) {
-                    producto.setImagen("default.jpg");
-                } else {
-                    producto.setImagen(img);
-
-                }
-
-                listaProductos.add(producto);
-            }
-        } catch (SQLException e) {
-            Logger.getLogger(ProductoDAOImpl.class.getName()).log(Level.SEVERE, null, e);
-        } finally {
-            this.closeConnection();
-        }
-
-        return listaProductos;
-
-    }
-    
-     @Override
-    public Producto getProductoById(int id){
-        Producto producto = null;
-        
+    public Producto buscarPorId(short id, Connection con) throws Exception {
         String sql = "SELECT * FROM productos WHERE idproducto = ?";
         
-        Connection conexion = null;
-        PreparedStatement preparada = null;
-        ResultSet resultado = null;
-     
-        try{
-            conexion = ConnectionFactory.getConnection();
-            preparada = conexion.prepareStatement(sql);
-            preparada.setInt(1, id);
-            resultado = preparada.executeQuery();
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setShort(1, id);
             
-            if (resultado.next()) {
-                producto = new Producto();
-                producto.setIdproducto(resultado.getShort("idproducto"));
-                producto.setIdcategoria(resultado.getByte("idcategoria"));
-                producto.setNombre(resultado.getString("nombre"));
-                producto.setDescripcion(resultado.getString("descripcion"));
-                producto.setPrecio(resultado.getBigDecimal("precio"));
-                producto.setMarca(resultado.getString("marca"));
-                producto.setImagen(resultado.getString("imagen"));
-                
-                String img = resultado.getString("imagen");
-                if (img == null || img.trim().isEmpty()) {
-                    producto.setImagen("default.jpg");
-                } else {
-                    producto.setImagen(img);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    logger.log(Level.INFO, "Producto encontrado: {0}", id);
+                    return mapear(rs);
                 }
             }
-        }catch (SQLException e){
-           Logger.getLogger(ProductoDAOImpl.class.getName()).log(Level.SEVERE, null, e);
-        }finally {
-             this.closeConnection();
+        }
+        
+        logger.log(Level.INFO, "Producto no encontrado: {0}", id);
+        return null;
+    }
+
+    @Override
+    public List<Producto> listarTodos(Connection con) throws Exception {
+        List<Producto> lista = new ArrayList<>();
+        String sql = "SELECT * FROM productos ORDER BY nombre";
+        
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                lista.add(mapear(rs));
+            }
+            
+            logger.log(Level.INFO, "Productos listados: {0}", lista.size());
+        }
+        
+        return lista;
+    }
+
+    @Override
+    public List<Producto> listarPorCategoria(byte idCategoria, Connection con) throws Exception {
+        List<Producto> lista = new ArrayList<>();
+        String sql = "SELECT * FROM productos WHERE idcategoria = ? ORDER BY nombre";
+        
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setByte(1, idCategoria);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
+            }
+        }
+        
+        logger.log(Level.INFO, "Productos de categor\u00eda {0}: {1}", new Object[]{idCategoria, lista.size()});
+        return lista;
+    }
+
+    @Override
+    public List<Producto> buscarPorFiltros(String nombre, String marca,
+                                            BigDecimal precioMin, BigDecimal precioMax,
+                                            Connection con) throws Exception {
+        List<Producto> lista = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM productos WHERE 1=1");
+        
+        // Construcción dinámica del SQL según filtros presentes
+        if (nombre != null && !nombre.trim().isEmpty()) {
+            sql.append(" AND nombre LIKE ?");
+        }
+        if (marca != null && !marca.trim().isEmpty()) {
+            sql.append(" AND marca LIKE ?");
+        }
+        if (precioMin != null) {
+            sql.append(" AND precio >= ?");
+        }
+        if (precioMax != null) {
+            sql.append(" AND precio <= ?");
+        }
+        
+        sql.append(" ORDER BY nombre");
+        
+        try (PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            
+            // Asignación dinámica de parámetros en el mismo orden que los WHERE
+            if (nombre != null && !nombre.trim().isEmpty()) {
+                ps.setString(paramIndex++, "%" + nombre.trim() + "%");
+            }
+            if (marca != null && !marca.trim().isEmpty()) {
+                ps.setString(paramIndex++, "%" + marca.trim() + "%");
+            }
+            if (precioMin != null) {
+                ps.setBigDecimal(paramIndex++, precioMin);
+            }
+            if (precioMax != null) {
+                ps.setBigDecimal(paramIndex, precioMax);
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
+            }
+        }
+        
+        logger.log(Level.INFO, "B\u00fasqueda con filtros: {0} resultados", lista.size());
+        return lista;
+    }
+
+    @Override
+    public List<Producto> obtenerProductosAleatorios(int cantidad, Connection con) throws Exception {
+        List<Producto> lista = new ArrayList<>();
+        String sql = "SELECT * FROM productos ORDER BY RAND() LIMIT ?";
+        
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, cantidad);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
+            }
+        }
+        
+        logger.log(Level.INFO, "Productos aleatorios obtenidos: {0}", lista.size());
+        return lista;
+    }
+
+    @Override
+    public List<String> obtenerMarcas(Connection con) throws Exception {
+        List<String> marcas = new ArrayList<>();
+        String sql = "SELECT DISTINCT marca FROM productos WHERE marca IS NOT NULL ORDER BY marca";
+        
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                marcas.add(rs.getString("marca"));
+            }
+        }
+        
+        logger.log(Level.INFO, "Marcas \u00fanicas obtenidas: {0}", marcas.size());
+        return marcas;
+    }
+
+    @Override
+    public BigDecimal obtenerPrecioMaximo(Connection con) throws Exception {
+        String sql = "SELECT MAX(precio) AS precio_max FROM productos";
+        
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            
+            if (rs.next()) {
+                BigDecimal max = rs.getBigDecimal("precio_max");
+                return (max != null) ? max : BigDecimal.ZERO;
+            }
+        }
+        
+        return BigDecimal.ZERO;
+    }
+
+    private Producto mapear(ResultSet rs) throws SQLException {
+        Producto producto = new Producto();
+        
+        producto.setIdproducto(rs.getShort("idproducto"));
+        producto.setIdcategoria(rs.getByte("idcategoria"));
+        producto.setNombre(rs.getString("nombre"));
+        producto.setDescripcion(rs.getString("descripcion"));
+        producto.setPrecio(rs.getBigDecimal("precio"));
+        producto.setMarca(rs.getString("marca"));
+        
+        // Gestión de imagen por defecto
+        String imagen = rs.getString("imagen");
+        if (imagen == null || imagen.trim().isEmpty()) {
+            producto.setImagen("default.jpg");
+        } else {
+            producto.setImagen(imagen);
         }
         
         return producto;
-    }
-    
-     @Override
-    public List<Producto> buscarProductos(String texto){
-        texto = texto.trim();
-        List<Producto> listaBuscarProductos = new ArrayList<>();
-        // Buscamos por nombre
-        String sql = "SELECT * FROM productos WHERE nombre LIKE ?";
-        
-        Connection conexion = null;
-        PreparedStatement preparada = null;
-        ResultSet resultado = null;
-        
-        try {
-            conexion = ConnectionFactory.getConnection();
-            preparada = conexion.prepareStatement(sql);
-            // Con los porcentajes % busca cualquier nombre que contenga esta palabra en cualquier posición
-            preparada.setString(1, "%" + texto + "%");
-
-            resultado = preparada.executeQuery();
-            
-            while (resultado.next()){
-                Producto producto = new Producto();
-                producto.setIdproducto(resultado.getShort("idproducto"));
-                producto.setIdcategoria(resultado.getByte("idcategoria"));
-                producto.setNombre(resultado.getString("nombre"));
-                producto.setDescripcion(resultado.getString("descripcion"));
-                producto.setPrecio(resultado.getBigDecimal("precio"));
-                producto.setMarca(resultado.getString("marca"));
-                
-                String img = resultado.getString("imagen");
-                if (img == null || img.trim().isEmpty()) {
-                    producto.setImagen("default.jpg");
-                } else {
-                    producto.setImagen(img);
-                }
-                
-                listaBuscarProductos.add(producto);
-            }
-            
-            
-        }catch (SQLException e){
-            Logger.getLogger(ProductoDAOImpl.class.getName()).log(Level.SEVERE, null, e);
-        }finally {
-             this.closeConnection();
-        }
-        
-        return listaBuscarProductos;
-    }
-    
-    @Override
-    public List<String> getMarcas(){
-        List<String> listaMarcas = new ArrayList<>();
-        
-        String sql = "SELECT marca FROM productos ORDER BY marca";
-        
-        Connection conexion = null;
-        PreparedStatement preparada = null;
-        ResultSet resultado = null;
-        
-        try {
-            
-            conexion = ConnectionFactory.getConnection();
-            preparada = conexion.prepareStatement(sql);
-            resultado = preparada.executeQuery();
-            
-            while (resultado.next()) {
-                listaMarcas.add(resultado.getString("marca"));
-            }
-            
-            
-        }catch (SQLException e){
-            Logger.getLogger(ProductoDAOImpl.class.getName()).log(Level.SEVERE, null, e);
-            
-        }finally {
-            this.closeConnection();
-        }
-        
-        return listaMarcas;
-    }
-    
-    @Override
-public BigDecimal getPrecioMaximo() {
-    BigDecimal max = new BigDecimal("1000.00"); // Valor por defecto
-    String sql = "SELECT MAX(precio) FROM productos";
-
-    Connection conexion = null;
-    PreparedStatement preparada = null;
-    ResultSet resultado = null;
-
-    try {
-        conexion = ConnectionFactory.getConnection();
-        preparada = conexion.prepareStatement(sql);
-        resultado = preparada.executeQuery();
-
-        if (resultado.next()) {
-            // Usamos getBigDecimal para máxima precisión
-            BigDecimal res = resultado.getBigDecimal(1);
-            if (res != null) max = res;
-        }
-    } catch (SQLException e) {
-        Logger.getLogger(ProductoDAOImpl.class.getName()).log(Level.SEVERE, null, e);
-    } finally {
-        this.closeConnection();
-    }
-    return max;
-}
-    
-    
-
-    @Override
-    public void closeConnection() {
-        ConnectionFactory.closeConexion();
     }
 
 }

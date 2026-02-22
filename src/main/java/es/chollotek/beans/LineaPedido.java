@@ -8,10 +8,10 @@ import java.io.Serializable;
  */
 public class LineaPedido implements Serializable {
 
-    private int idlinea;
-    private int idpedido;
-    private int idproducto;
-    private int cantidad;
+    private short idlinea;
+    private short idpedido;
+    private short idproducto;
+    private short cantidad;
 
     public LineaPedido() {
     }
@@ -22,35 +22,35 @@ public class LineaPedido implements Serializable {
 //    }
 
     //Getters y Setters
-    public int getIdlinea() {
+    public short getIdlinea() {
         return idlinea;
     }
 
-    public void setIdlinea(int idlinea) {
+    public void setIdlinea(short idlinea) {
         this.idlinea = idlinea;
     }
 
-    public int getIdpedido() {
+    public short getIdpedido() {
         return idpedido;
     }
 
-    public void setIdpedido(int idpedido) {
+    public void setIdpedido(short idpedido) {
         this.idpedido = idpedido;
     }
 
-    public int getProducto() {
+    public short getIdproducto() {
         return idproducto;
     }
 
-    public void setProducto(int idproducto) {
+    public void setIdproducto(short idproducto) {
         this.idproducto = idproducto;
     }
 
-    public int getCantidad() {
+    public short getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(int cantidad) {
+    public void setCantidad(short cantidad) {
         this.cantidad = cantidad;
     }
 

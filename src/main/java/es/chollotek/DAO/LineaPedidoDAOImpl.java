@@ -1,9 +1,137 @@
 package es.chollotek.DAO;
 
+import es.chollotek.beans.LineaPedido;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author Alba
  */
-public class LineaPedidoDAOImpl {
+public class LineaPedidoDAOImpl implements LineaPedidoDAO{
+    
+    private static final Logger logger = Logger.getLogger(LineaPedidoDAOImpl.class.getName());
+
+    @Override
+    public List<LineaPedido> listarPorPedido(short idPedido, Connection con) throws Exception {
+        List<LineaPedido> lista = new ArrayList<>();
+        String sql = "SELECT * FROM lineaspedidos WHERE idpedido = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setShort(1, idPedido);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
+            }
+        }
+        
+        logger.log(Level.INFO, "L\u00edneas del pedido {0}: {1}", new Object[]{idPedido, lista.size()});
+        return lista;
+    }
+
+    @Override
+    public LineaPedido buscarLinea(short idPedido, short idProducto, Connection con) throws Exception {
+        String sql = "SELECT * FROM lineaspedidos WHERE idpedido = ? AND idproducto = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setShort(1, idPedido);
+            ps.setShort(2, idProducto);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    logger.log(Level.INFO, "L\u00ednea encontrada: pedido {0}, producto {1}", new Object[]{idPedido, idProducto});
+                    return mapear(rs);
+                }
+            }
+        }
+        
+        logger.log(Level.INFO, "L\u00ednea no encontrada: pedido {0}, producto {1}", new Object[]{idPedido, idProducto});
+        return null;
+    }
+
+    @Override
+    public void insertar(LineaPedido linea, Connection con) throws Exception {
+        String sql = "INSERT INTO lineaspedidos (idpedido, idproducto, cantidad) " +
+                     "VALUES (?, ?, ?)";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setShort(1, (short) linea.getIdpedido());
+            ps.setShort(2, (short) linea.getIdproducto());
+            ps.setShort(3, (short) linea.getCantidad());
+            
+            int filasAfectadas = ps.executeUpdate();
+            
+            if (filasAfectadas == 0) {
+                throw new SQLException("Error al insertar línea de pedido.");
+            }
+            
+            logger.log(Level.INFO, "L\u00ednea insertada: pedido {0}, producto {1}, cantidad {2}", new Object[]{linea.getIdpedido(), linea.getIdproducto(), linea.getCantidad()});
+        }
+    }
+
+    @Override
+    public void actualizarCantidad(short idLinea, short cantidad, Connection con) throws Exception {
+        String sql = "UPDATE lineaspedidos SET cantidad = ? WHERE idlinea = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setShort(1, cantidad);
+            ps.setShort(2, idLinea);
+            
+            int filasAfectadas = ps.executeUpdate();
+            
+            if (filasAfectadas == 0) {
+                logger.log(Level.WARNING, "No se encontr\u00f3 l\u00ednea con ID: {0}", idLinea);
+                throw new SQLException("No se pudo actualizar: línea no encontrada.");
+            }
+            
+            logger.log(Level.INFO, "Cantidad actualizada: l\u00ednea {0} \u2192 {1} uds", new Object[]{idLinea, cantidad});
+        }
+    }
+
+    @Override
+    public void eliminar(short idLinea, Connection con) throws Exception {
+        String sql = "DELETE FROM lineaspedidos WHERE idlinea = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setShort(1, idLinea);
+            
+            int filasAfectadas = ps.executeUpdate();
+            
+            if (filasAfectadas == 0) {
+                logger.log(Level.WARNING, "No se encontr\u00f3 l\u00ednea con ID: {0}", idLinea);
+                throw new SQLException("No se pudo eliminar: línea no encontrada.");
+            }
+            
+            logger.log(Level.INFO, "L\u00ednea eliminada: {0}", idLinea);
+        }
+    }
+
+    @Override
+    public void eliminarPorPedido(short idPedido, Connection con) throws Exception {
+        String sql = "DELETE FROM lineaspedidos WHERE idpedido = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setShort(1, idPedido);
+            
+            int filasAfectadas = ps.executeUpdate();
+            
+            logger.log(Level.INFO, "L\u00edneas eliminadas del pedido {0}: {1}", new Object[]{idPedido, filasAfectadas});
+        }
+    }
+
+    private LineaPedido mapear(ResultSet rs) throws SQLException {
+        LineaPedido l = new LineaPedido();
+        l.setIdlinea(rs.getShort("idlinea"));
+        l.setIdpedido(rs.getShort("idpedido"));
+        l.setIdproducto(rs.getShort("idproducto"));
+        l.setCantidad(rs.getShort("cantidad"));
+        return l;
+    }
     
 }
