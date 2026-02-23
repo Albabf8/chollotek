@@ -1,7 +1,7 @@
 package es.chollotek.controllers;
 
+import es.chollotek.DAO.ConnectionFactory;
 import es.chollotek.beans.Producto;
-import es.chollotek.DAOFactory.DAOFactory;
 import java.io.IOException;
 import java.util.List;
 import javax.servlet.ServletException;
@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import es.chollotek.DAO.ProductoDAO;
+import es.chollotek.DAOFactory.MySQLDAOFactory;
+import java.math.BigDecimal;
+import java.sql.Connection;
 
 /**
  *
@@ -46,97 +49,37 @@ public class FrontController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
         String url = "index.jsp";
-
         String accion = request.getParameter("accion");
 
         if (accion != null) {
             switch (accion) {
 
+                // ═══════════════════════════════════════════════════════
+                // INICIO - Página principal con productos aleatorios
+                // ═══════════════════════════════════════════════════════
                 case "inicio":
-                    try {
-                    DAOFactory daof = DAOFactory.getDAOFactory();
-                    ProductoDAO pdao = daof.getProductoDAO();
-                    List<Producto> lista = pdao.getProductosLanding();
+                    url = accionInicio(request);
+                    break;
 
-                    // Guardamos la lista en la request para mostrar en index.jsp
-                    request.setAttribute("productos", lista);
+                // ═══════════════════════════════════════════════════════
+                // FILTRAR - Búsqueda avanzada con múltiples criterios
+                // ═══════════════════════════════════════════════════════
+                case "filtrar":
+                    url = accionFiltrar(request);
+                    break;
 
-                    
+                // ═══════════════════════════════════════════════════════
+                // BUSCAR - Búsqueda simple por texto
+                // ═══════════════════════════════════════════════════════
+                case "buscar":
+                    url = accionBuscar(request);
+                    break;
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    request.setAttribute("mensajeError", "Error cargando los productos.");
-                }
-                url = "index.jsp";
-                break;
-
-
-//                case "filtrar":
-//                    try {
-//                    DAOFactory daof = DAOFactory.getDAOFactory();
-//                    IProductoDAO pdao = daof.getProductoDAO();
-//
-//                    // A. Recoger parámetros del formulario/enlace
-//                    String idCat = request.getParameter("idCategoria");
-//                    String marca = request.getParameter("marca");
-//                    String precioStr = request.getParameter("precio"); // El name del input range
-//
-//                    // B. Gestionar el precio (parsear y validar)
-//                    double precioTope = -1;
-//
-//                    // Recuperamos el tope global del Listener por si hay error o viene vacío
-//                    Object precioGlobalObj = getServletContext().getAttribute("precioTopeGlobal");
-//                    double precioGlobal = (precioGlobalObj != null) ? (Double) precioGlobalObj : 1000.00;
-//
-//                    if (precioStr != null && !precioStr.isEmpty()) {
-//                        try {
-//                            precioTope = Double.parseDouble(precioStr);
-//                        } catch (NumberFormatException e) {
-//                            precioTope = precioGlobal;
-//                        }
-//                    } else {
-//                        precioTope = precioGlobal;
-//                    }
-//
-//                    // C. Llamar al DAO Filtrado
-//                    //List<Producto> filtrados = pdao.getProductosFiltrados(idCat, marca, precioTope);
-//                    //request.setAttribute("productos", filtrados);
-//
-//                    // D. Mantener la selección en la vista (para que no se resetee el formulario)
-//                    request.setAttribute("catSeleccionada", idCat);
-//                    request.setAttribute("marcaSeleccionada", marca);
-//                    request.setAttribute("precioSeleccionado", precioTope);
-//
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    request.setAttribute("mensajeError", "Error al filtrar productos.");
-//                }
-//
-//                url = "index.jsp";
-//                break;
-//
-
-//                case "buscar":
-//                    String texto = request.getParameter("textoBusqueda");
-//                    if (texto != null && !texto.trim().isEmpty()) {
-//                        DAOFactory daof = DAOFactory.getDAOFactory();
-//                        IProductoDAO pdao = daof.getProductoDAO();
-//                        List<Producto> resultados = pdao.buscarProductos(texto);
-//
-//                        // Guardamos los resultados en la request para mostrarlos
-//                        //request.setAttribute("resultadosBusqueda", resultados);
-//                        request.setAttribute("productos", resultados);
-//
-//                        // Mensaje informativo
-//                        if (resultados.isEmpty()) {
-//                            request.setAttribute("mensajeError", "No se encontraron productos con: " + texto);
-//                        }
-//                    }
-//
-//                    url = "index.jsp"; 
-//                    break;
-
+                // ═══════════════════════════════════════════════════════
+                // CARRITO - Visualizar y gestionar carrito
+                // ═══════════════════════════════════════════════════════
                 case "verCarrito":
                     url = "JSP/carrito.jsp";
                     break;
@@ -146,23 +89,20 @@ public class FrontController extends HttpServlet {
                 case "restarCantidad":
                 case "vaciarCarrito":
                 case "eliminarProducto":
+                    // Estas acciones se delegan al CarritoController
                     url = "CarritoController";
                     break;
 
-//                case "tramitarPedido":
-//                    HttpSession sesion = request.getSession();
-//                    if (sesion.getAttribute("usuario") == null) {
-//                        request.setAttribute("mensajeError", "Para tramitar el pedido necesitas iniciar sesión o registrarte.");
-//                        url = "JSP/login.jsp";
-//                    } else {
-//                        // ÉXITO: Está logueado
-//                        // Aquí iría la lógica de guardar el pedido en BBDD
-//                        // Por ahora lo mandamos a una página de éxito o resumen
-//                        // url = "pedidoFinalizado.jsp"; 
-//                        System.out.println("Usuario logueado, tramitando pedido...");
-//                    }
-//                    break;
+                // ═══════════════════════════════════════════════════════
+                // PEDIDOS - Tramitar compra
+                // ═══════════════════════════════════════════════════════
+                case "tramitarPedido":
+                    url = accionTramitarPedido(request);
+                    break;
 
+                // ═══════════════════════════════════════════════════════
+                // USUARIO - Login, registro, perfil
+                // ═══════════════════════════════════════════════════════
                 case "verRegistro":
                     url = "JSP/registro.jsp";
                     break;
@@ -175,14 +115,236 @@ public class FrontController extends HttpServlet {
                     url = "RegistroController";
                     break;
 
-                default:
+                case "verPerfil":
+                    url = "JSP/privadas/perfil.jsp";
+                    break;
+
+                case "verPedidos":
+                    url = "JSP/privadas/pedidos.jsp";
+                    break;
+
+                case "logout":
+                    request.getSession().invalidate();
                     url = "index.jsp";
                     break;
+
+                // ═══════════════════════════════════════════════════════
+                // DEFAULT - Página de inicio por defecto
+                // ═══════════════════════════════════════════════════════
+                default:
+                    url = accionInicio(request);
+                    break;
             }
+        } else {
+            // Si no viene acción, mostrar inicio
+            url = accionInicio(request);
         }
 
         request.getRequestDispatcher(url).forward(request, response);
     }
-        
+
+    // ═════════════════════════════════════════════════════════════════
+    // MÉTODOS AUXILIARES - Cada acción en su propio método
+    // ═════════════════════════════════════════════════════════════════
+
+    /**
+     * Muestra la página de inicio con productos aleatorios (landing page).
+     * Carga 8 productos aleatorios para mostrar variedad en cada visita.
+     * 
+     * @param request petición HTTP
+     * @return URL de la vista a mostrar
+     */
+    private String accionInicio(HttpServletRequest request) {
+        Connection con = null;
+        try {
+            // 1. Obtener conexión del pool
+            con = ConnectionFactory.getConnection();
+
+            // 2. Obtener DAO
+            MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+            ProductoDAO pdao = factory.getProductoDAO();
+
+            // 3. Obtener productos aleatorios (8 para landing)
+            List<Producto> lista = pdao.obtenerProductosAleatorios(8, con);
+
+            // 4. Guardar en request para la vista
+            request.setAttribute("productos", lista);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensajeError", "Error cargando los productos: " + e.getMessage());
+        } finally {
+            // 5. SIEMPRE cerrar la conexión (la devuelve al pool)
+            ConnectionFactory.closeConnection(con);
+        }
+
+        return "index.jsp";
     }
+
+    /**
+     * Filtra productos por categoría, marca y rango de precio.
+     * Implementa la búsqueda avanzada combinando múltiples criterios.
+     * 
+     * @param request petición HTTP con parámetros: idCategoria, marca, precioMin, precioMax
+     * @return URL de la vista a mostrar
+     */
+    private String accionFiltrar(HttpServletRequest request) {
+        Connection con = null;
+        try {
+            // 1. Obtener conexión del pool
+            con = ConnectionFactory.getConnection();
+
+            // 2. Recoger parámetros del formulario
+            String idCatStr = request.getParameter("idCategoria");
+            String marca = request.getParameter("marca");
+            String precioMinStr = request.getParameter("precioMin");
+            String precioMaxStr = request.getParameter("precioMax");
+            String nombre = request.getParameter("nombre");
+
+            // 3. Parsear parámetros numéricos
+            Byte idCategoria = null;
+            if (idCatStr != null && !idCatStr.trim().isEmpty() && !idCatStr.equals("0")) {
+                try {
+                    idCategoria = Byte.parseByte(idCatStr);
+                } catch (NumberFormatException e) {
+                    // Si no es válido, se ignora
+                }
+            }
+
+            BigDecimal precioMin = null;
+            if (precioMinStr != null && !precioMinStr.trim().isEmpty()) {
+                try {
+                    precioMin = new BigDecimal(precioMinStr);
+                } catch (NumberFormatException e) {
+                    // Si no es válido, se ignora
+                }
+            }
+
+            BigDecimal precioMax = null;
+            if (precioMaxStr != null && !precioMaxStr.trim().isEmpty()) {
+                try {
+                    precioMax = new BigDecimal(precioMaxStr);
+                } catch (NumberFormatException e) {
+                    // Si no es válido, se ignora
+                }
+            }
+
+            // 4. Obtener DAO
+            MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+            ProductoDAO pdao = factory.getProductoDAO();
+
+            // 5. Ejecutar filtrado
+            List<Producto> filtrados;
+            if (idCategoria != null) {
+                // Si hay categoría, filtrar solo por categoría
+                filtrados = pdao.listarPorCategoria(idCategoria, con);
+            } else {
+                // Si no, usar filtros combinados
+                filtrados = pdao.buscarPorFiltros(nombre, marca, precioMin, precioMax, con);
+            }
+
+            // 6. Guardar resultados y mantener selección en la vista
+            request.setAttribute("productos", filtrados);
+            request.setAttribute("catSeleccionada", idCatStr);
+            request.setAttribute("marcaSeleccionada", marca);
+            request.setAttribute("precioMinSeleccionado", precioMinStr);
+            request.setAttribute("precioMaxSeleccionado", precioMaxStr);
+            request.setAttribute("nombreBuscado", nombre);
+
+            // 7. Mensaje si no hay resultados
+            if (filtrados.isEmpty()) {
+                request.setAttribute("mensajeInfo", "No se encontraron productos con los filtros seleccionados.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensajeError", "Error al filtrar productos: " + e.getMessage());
+        } finally {
+            ConnectionFactory.closeConnection(con);
+        }
+
+        return "index.jsp";
+    }
+
+    /**
+     * Búsqueda simple por texto en el nombre de los productos.
+     * Busca productos que contengan el texto en su nombre (LIKE %texto%).
+     * 
+     * @param request petición HTTP con parámetro: textoBusqueda
+     * @return URL de la vista a mostrar
+     */
+    private String accionBuscar(HttpServletRequest request) {
+        Connection con = null;
+        try {
+            // 1. Recoger texto de búsqueda
+            String texto = request.getParameter("textoBusqueda");
+
+            if (texto != null && !texto.trim().isEmpty()) {
+                // 2. Obtener conexión
+                con = ConnectionFactory.getConnection();
+
+                // 3. Obtener DAO
+                MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+                ProductoDAO pdao = factory.getProductoDAO();
+
+                // 4. Buscar por nombre (usa buscarPorFiltros con solo nombre)
+                List<Producto> resultados = pdao.buscarPorFiltros(texto, null, null, null, con);
+
+                // 5. Guardar resultados
+                request.setAttribute("productos", resultados);
+                request.setAttribute("textoBuscado", texto);
+
+                // 6. Mensaje si no hay resultados
+                if (resultados.isEmpty()) {
+                    request.setAttribute("mensajeInfo", "No se encontraron productos con: \"" + texto + "\"");
+                } else {
+                    request.setAttribute("mensajeInfo", "Se encontraron " + resultados.size() + 
+                                                       " productos para: \"" + texto + "\"");
+                }
+            } else {
+                request.setAttribute("mensajeError", "Debes introducir un texto para buscar.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensajeError", "Error en la búsqueda: " + e.getMessage());
+        } finally {
+            ConnectionFactory.closeConnection(con);
+        }
+
+        return "index.jsp";
+    }
+
+    /**
+     * Tramita el pedido (finaliza el carrito).
+     * Verifica que el usuario esté logueado antes de permitir la compra.
+     * 
+     * @param request petición HTTP con sesión del usuario
+     * @return URL de la vista a mostrar
+     */
+    private String accionTramitarPedido(HttpServletRequest request) {
+        HttpSession sesion = request.getSession(false);
+
+        // Verificar si el usuario está logueado
+        if (sesion == null || sesion.getAttribute("usuario") == null) {
+            request.setAttribute("mensajeError", 
+                "Para tramitar el pedido necesitas iniciar sesión o registrarte.");
+            return "JSP/login.jsp";
+        }
+
+        // Usuario logueado: delegar al PedidoController
+        // (Aquí se implementará la lógica completa de finalización)
+        return "PedidoController";
+    }
+
+    /**
+     * Devuelve una descripción breve del servlet.
+     */
+    @Override
+    public String getServletInfo() {
+        return "Front Controller - Controlador principal de Chollotek";
+    }
+    }
+        
+    
 

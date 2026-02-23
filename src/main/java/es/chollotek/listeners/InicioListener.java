@@ -1,7 +1,5 @@
 package es.chollotek.listeners;
 
-
-import es.chollotek.DAOFactory.DAOFactory;
 import es.chollotek.beans.Categoria;
 import java.util.List;
 import javax.servlet.ServletContext;
@@ -9,6 +7,9 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import es.chollotek.DAO.CategoriaDAO;
+import es.chollotek.DAO.ConnectionFactory;
+import es.chollotek.DAOFactory.MySQLDAOFactory;
+import java.sql.Connection;
 
 /**
  *
@@ -19,32 +20,26 @@ public class InicioListener implements ServletContextListener{
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-       System.out.println("--- CHOLLOTEK: CARGANDO DATOS AL ARRANCAR ---");
+        ServletContext ctx = sce.getServletContext();
+        Connection con = null;
         
-       ServletContext contexto = sce.getServletContext();
-       
-       try {
-            // A) Obtenemos la fábrica y el DAO
-            DAOFactory daof = DAOFactory.getDAOFactory();
-            CategoriaDAO cdao = daof.getCategoriaDAO();
+        try {
+            con = ConnectionFactory.getConnection();
+            CategoriaDAO dao = MySQLDAOFactory.getInstancia().getCategoriaDAO();
+            List<Categoria> categorias = dao.listarTodas(con);
             
-            List<Categoria> listaCategorias = cdao.getCategorias();
-            
-            // C) Los guardamos en el APPLICATION SCOPE
-           
-            contexto.setAttribute("categorias", listaCategorias);
-            
-            System.out.println("-> Éxito: " + listaCategorias.size() + " categorias listas.");
+            ctx.setAttribute("categorias", categorias);
+            ctx.log("✅ Chollotek iniciada. Categorías cargadas: " + categorias.size());
             
         } catch (Exception e) {
-            System.err.println("--- ERROR AL ARRANCAR CHOLLOTEK ---");
-            e.printStackTrace();
+            ctx.log("❌ ERROR cargando categorías al inicio: " + e.getMessage(), e);
+        } finally {
+            ConnectionFactory.closeConnection(con);
         }
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-       
+        sce.getServletContext().log("Chollotek cerrada. Pool gestionado por Tomcat.");
     }
-    
 }
