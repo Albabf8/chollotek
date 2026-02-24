@@ -19,12 +19,12 @@ public class LineaPedidoDAOImpl implements LineaPedidoDAO{
     private static final Logger logger = Logger.getLogger(LineaPedidoDAOImpl.class.getName());
 
     @Override
-    public List<LineaPedido> listarPorPedido(short idPedido, Connection con) throws Exception {
+    public List<LineaPedido> listarPorPedido(int idPedido, Connection con) throws Exception {
         List<LineaPedido> lista = new ArrayList<>();
         String sql = "SELECT * FROM lineaspedidos WHERE idpedido = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setShort(1, idPedido);
+            ps.setInt(1, idPedido);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     lista.add(mapear(rs));
@@ -37,12 +37,12 @@ public class LineaPedidoDAOImpl implements LineaPedidoDAO{
     }
 
     @Override
-    public LineaPedido buscarLinea(short idPedido, short idProducto, Connection con) throws Exception {
+    public LineaPedido buscarLinea(int idPedido, int idProducto, Connection con) throws Exception {
         String sql = "SELECT * FROM lineaspedidos WHERE idpedido = ? AND idproducto = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setShort(1, idPedido);
-            ps.setShort(2, idProducto);
+            ps.setInt(1, idPedido);
+            ps.setInt(2, idProducto);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     logger.log(Level.INFO, "L\u00ednea encontrada: pedido {0}, producto {1}", new Object[]{idPedido, idProducto});
@@ -61,9 +61,9 @@ public class LineaPedidoDAOImpl implements LineaPedidoDAO{
                      "VALUES (?, ?, ?)";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setShort(1, (short) linea.getIdpedido());
-            ps.setShort(2, (short) linea.getIdproducto());
-            ps.setShort(3, (short) linea.getCantidad());
+            ps.setInt(1, linea.getIdpedido());
+            ps.setInt(2, linea.getIdproducto());
+            ps.setInt(3, linea.getCantidad());
             
             int filasAfectadas = ps.executeUpdate();
             
@@ -76,12 +76,12 @@ public class LineaPedidoDAOImpl implements LineaPedidoDAO{
     }
 
     @Override
-    public void actualizarCantidad(short idLinea, short cantidad, Connection con) throws Exception {
+    public void actualizarCantidad(int idLinea, int cantidad, Connection con) throws Exception {
         String sql = "UPDATE lineaspedidos SET cantidad = ? WHERE idlinea = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setShort(1, cantidad);
-            ps.setShort(2, idLinea);
+            ps.setInt(1, cantidad);
+            ps.setInt(2, idLinea);
             
             int filasAfectadas = ps.executeUpdate();
             
@@ -95,11 +95,11 @@ public class LineaPedidoDAOImpl implements LineaPedidoDAO{
     }
 
     @Override
-    public void eliminar(short idLinea, Connection con) throws Exception {
+    public void eliminar(int idLinea, Connection con) throws Exception {
         String sql = "DELETE FROM lineaspedidos WHERE idlinea = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setShort(1, idLinea);
+            ps.setInt(1, idLinea);
             
             int filasAfectadas = ps.executeUpdate();
             
@@ -113,11 +113,11 @@ public class LineaPedidoDAOImpl implements LineaPedidoDAO{
     }
 
     @Override
-    public void eliminarPorPedido(short idPedido, Connection con) throws Exception {
+    public void eliminarPorPedido(int idPedido, Connection con) throws Exception {
         String sql = "DELETE FROM lineaspedidos WHERE idpedido = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setShort(1, idPedido);
+            ps.setInt(1, idPedido);
             
             int filasAfectadas = ps.executeUpdate();
             
@@ -127,10 +127,10 @@ public class LineaPedidoDAOImpl implements LineaPedidoDAO{
 
     private LineaPedido mapear(ResultSet rs) throws SQLException {
         LineaPedido l = new LineaPedido();
-        l.setIdlinea(rs.getShort("idlinea"));
-        l.setIdpedido(rs.getShort("idpedido"));
-        l.setIdproducto(rs.getShort("idproducto"));
-        l.setCantidad(rs.getShort("cantidad"));
+        l.setIdlinea(rs.getInt("idlinea"));
+        l.setIdpedido(rs.getInt("idpedido"));
+        l.setIdproducto(rs.getInt("idproducto"));
+        l.setCantidad(rs.getInt("cantidad"));
         return l;
     }
     

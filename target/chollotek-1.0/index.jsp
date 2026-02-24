@@ -4,180 +4,150 @@
     Author     : Alba
 --%>
 
-<jsp:directive.page contentType="text/html" pageEncoding="UTF-8"/>
-<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<c:url var="estilo" value="/CSS/estilo.css" scope="application" />
-<c:set var="contexto" value="${pageContext.request.contextPath}" scope="application"/>
+<%@ page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <jsp:include page="/INC/cabecera.jsp">
-            <jsp:param name="titulo" value="Chollotek" />
-            <jsp:param name="estilo" value="${estilo}" />
-        </jsp:include>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chollotek - Tu tienda online</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/estilo.css">
 </head>
 <body>
+    
+    <!-- HEADER -->
+    <jsp:include page="INC/header.jsp" />
 
-  <!-- NAV -->
-  <nav>
-    <div class="logo">CHOLLOTEK</div>
-    <div class="search-bar">
-      <input type="text" placeholder="Buscar productos…" />
+    <!-- MENSAJES -->
+    <c:if test="${not empty mensajeError}">
+        <div class="alert alert-error">${mensajeError}</div>
+    </c:if>
+    <c:if test="${not empty mensajeExito}">
+        <div class="alert alert-success">${mensajeExito}</div>
+    </c:if>
+    <c:if test="${not empty mensajeInfo}">
+        <div class="alert alert-info">${mensajeInfo}</div>
+    </c:if>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container">
+        
+        <!-- SIDEBAR: Categorías y Filtros -->
+        <aside class="sidebar">
+            <h3>Categorías</h3>
+            <ul class="categorias">
+                <li>
+                    <a href="FrontController?accion=inicio">Todas</a>
+                </li>
+                <c:forEach items="${categorias}" var="cat">
+                    <li>
+                        <a href="FrontController?accion=filtrar&idCategoria=${cat.idcategoria}">
+                            ${cat.nombre}
+                        </a>
+                    </li>
+                </c:forEach>
+            </ul>
+
+            <!-- FORMULARIO DE BÚSQUEDA -->
+            <form action="FrontController" method="post" class="filtros">
+                <input type="hidden" name="accion" value="buscar">
+                
+                <div class="form-group">
+                    <label>Buscar producto:</label>
+                    <input type="text" name="textoBusqueda" 
+                           placeholder="Nombre del producto..."
+                           value="${textoBuscado}">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </form>
+
+            <!-- FILTROS AVANZADOS -->
+            <form action="FrontController" method="post" class="filtros">
+                <input type="hidden" name="accion" value="filtrar">
+                
+                <h4>Filtrar por:</h4>
+                
+                <div class="form-group">
+                    <label>Marca:</label>
+                    <input type="text" name="marca" 
+                           placeholder="Ej: Samsung"
+                           value="${marcaSeleccionada}">
+                </div>
+                
+                <div class="form-group">
+                    <label>Precio mínimo:</label>
+                    <input type="number" name="precioMin" 
+                           step="0.01" min="0"
+                           value="${precioMinSeleccionado}">
+                </div>
+                
+                <div class="form-group">
+                    <label>Precio máximo:</label>
+                    <input type="number" name="precioMax" 
+                           step="0.01" min="0"
+                           value="${precioMaxSeleccionado}">
+                </div>
+                
+                <button type="submit" class="btn btn-secondary">Aplicar filtros</button>
+            </form>
+        </aside>
+
+        <!-- GRID DE PRODUCTOS -->
+        <main class="productos-grid">
+            <h2>
+                <c:choose>
+                    <c:when test="${not empty textoBuscado}">
+                        Resultados para: "${textoBuscado}"
+                    </c:when>
+                    <c:when test="${not empty catSeleccionada}">
+                        Productos filtrados
+                    </c:when>
+                    <c:otherwise>
+                        Productos destacados
+                    </c:otherwise>
+                </c:choose>
+            </h2>
+
+            <c:choose>
+                <c:when test="${empty productos}">
+                    <p class="no-productos">No hay productos disponibles.</p>
+                </c:when>
+                <c:otherwise>
+                    <div class="productos-container">
+                        <c:forEach items="${productos}" var="prod">
+                            <article class="producto-card">
+                                <img src="${pageContext.request.contextPath}/imagenes/productos/${prod.imagen}" 
+                                     alt="${prod.nombre}"
+                                     onerror="this.src='${pageContext.request.contextPath}/imagenes/productos/default.jpg'">
+                                
+                                <div class="producto-info">
+                                    <h3>${prod.nombre}</h3>
+                                    <p class="marca">${prod.marca}</p>
+                                    <p class="precio">
+                                        <fmt:formatNumber value="${prod.precio}" type="currency" currencySymbol="€"/>
+                                    </p>
+                                    
+                                    <form action="CarritoController" method="post" class="form-inline">
+                                        <input type="hidden" name="accion" value="anadir">
+                                        <input type="hidden" name="idproducto" value="${prod.idproducto}">
+                                        <button type="submit" class="btn btn-add-cart">
+                                            🛒 Añadir al carrito
+                                        </button>
+                                    </form>
+                                </div>
+                            </article>
+                        </c:forEach>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </main>
     </div>
-    <div class="nav-actions">
-      <button class="nav-btn"><span>👤</span> Mi cuenta</button>
-      <button class="nav-btn"><span>🛒</span> Mi carrito</button>
-    </div>
-  </nav>
 
-  <!-- HERO -->
-  <div style="position:relative; background: radial-gradient(ellipse 80% 100% at 80% 50%, rgba(124,58,237,.2) 0%, transparent 70%);">
-    <div class="hero-bg"></div>
-    <div class="hero">
-      <div class="hero-content">
-        <h1>¡Tu PC Despega<br/>con <span>Chollotek!</span></h1>
-        <p>Asesora de productos y comparte con nosotros comparaciones a las páginas que goes here.</p>
-        <a href="#ofertas" class="btn-primary">Ver ofertas 🔥 Aquí</a>
-      </div>
-    </div>
-    <div class="hero-illustration">🖥️</div>
-  </div>
-
-  <div class="glow-line"></div>
-
-  <!-- OFERTAS -->
-  <section class="section" id="ofertas">
-    <h2 class="section-title">OFERTAS</h2>
-    <div class="product-grid">
-
-      <%--
-      ══════════════════════════════════════════════════════
-      VERSIÓN DINÁMICA con JSTL (activar cuando esté el DAO)
-      El Servlet pone en request: List<ProductoDTO> productos
-      Cada ProductoDTO tiene: id, icono, nombre, precio, marca, descripcion
-      ══════════════════════════════════════════════════════
-
-      <c:forEach var="p" items="${productos}">
-        <div class="product-card">
-          <div class="product-img"><span>${p.icono}</span></div>
-          <div class="product-name">${p.nombre}</div>
-          <div class="product-price">
-            <fmt:formatNumber value="${p.precio}" type="currency"
-                              currencySymbol="€" maxFractionDigits="2" />
-          </div>
-          <div class="card-actions">
-            <button class="btn-open"
-                    onclick="abrirModal('${p.icono}','${p.nombre}','${p.marca}','${p.descripcion}',${p.precio},${p.id})">
-              Abrir
-            </button>
-            <button class="btn-buy"
-                    onclick="location.href='${pageContext.request.contextPath}/CarritoServlet?accion=agregar&idProducto=${p.id}'">
-              Comprar
-            </button>
-          </div>
-        </div>
-      </c:forEach>
-      --%>
-
-      <%-- DATOS ESTÁTICOS de ejemplo (reemplazar por el c:forEach anterior) --%>
-
-      <div class="product-card">
-        <div class="product-img"><span>🎧</span></div>
-        <div class="product-name">Auriculares Gaming Pro X</div>
-        <div class="product-price">29,99 €</div>
-        <div class="card-actions">
-          <button class="btn-open" onclick="abrirModal('🎧','Auriculares Gaming Pro X','HyperSound','Auriculares gaming con sonido envolvente 7.1, micrófono retráctil con cancelación de ruido y diadema acolchada para largas sesiones.',29.99,1)">Abrir</button>
-          <button class="btn-buy">Comprar</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img"><span>💻</span></div>
-        <div class="product-name">Portátil UltraBook 15</div>
-        <div class="product-price">549,00 €</div>
-        <div class="card-actions">
-          <button class="btn-open" onclick="abrirModal('💻','Portátil UltraBook 15','TechBook','Portátil ultradelgado con pantalla IPS Full HD de 15.6 pulgadas, procesador Intel Core i5 de 12a gen, 16 GB RAM y SSD 512 GB.',549.00,2)">Abrir</button>
-          <button class="btn-buy">Comprar</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img"><span>🖥️</span></div>
-        <div class="product-name">PC Gaming Ryzen 7 RTX 4070</div>
-        <div class="product-price">899,00 €</div>
-        <div class="card-actions">
-          <button class="btn-open" onclick="abrirModal('🖥️','PC Gaming Ryzen 7 RTX 4070','CholloPC','Torre gaming con AMD Ryzen 7 5800X, NVIDIA RTX 4070 12 GB, 32 GB DDR4 y SSD NVMe 1 TB. Lista para jugar al máximo.',899.00,3)">Abrir</button>
-          <button class="btn-buy">Comprar</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img"><span>🎮</span></div>
-        <div class="product-name">Mando Pro Wireless</div>
-        <div class="product-price">349,99 €</div>
-        <div class="card-actions">
-          <button class="btn-open" onclick="abrirModal('🎮','Mando Pro Wireless','GameForce','Mando inalámbrico con vibración háptica, gatillos adaptativos, batería de 40 h y compatibilidad con PC, PS y Xbox.',349.99,4)">Abrir</button>
-          <button class="btn-buy">Comprar</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img"><span>⚡</span></div>
-        <div class="product-name">Fuente 850W 80+ Gold</div>
-        <div class="product-price">199,99 €</div>
-        <div class="card-actions">
-          <button class="btn-open" onclick="abrirModal('⚡','Fuente 850W 80+ Gold','VoltCore','Fuente modular 850 W con certificación 80+ Gold, protección contra sobretensión y ventilador silencioso de 135 mm.',199.99,5)">Abrir</button>
-          <button class="btn-buy">Comprar</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img"><span>⌨️</span></div>
-        <div class="product-name">Teclado Mecánico RGB TKL</div>
-        <div class="product-price">79,99 €</div>
-        <div class="card-actions">
-          <button class="btn-open" onclick="abrirModal('⌨️','Teclado Mecánico RGB TKL','KeyForce','Teclado tenkeyless con switches Cherry MX Red, iluminación RGB por tecla, marco de aluminio y cable USB-C desmontable.',79.99,6)">Abrir</button>
-          <button class="btn-buy">Comprar</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img"><span>🖱️</span></div>
-        <div class="product-name">Ratón Gaming 16000 DPI</div>
-        <div class="product-price">49,99 €</div>
-        <div class="card-actions">
-          <button class="btn-open" onclick="abrirModal('🖱️','Ratón Gaming 16000 DPI','SwiftClick','Ratón gaming con sensor óptico de 16000 DPI, 7 botones programables, RGB de 16 M de colores y diseño ergonómico ambidiestro.',49.99,7)">Abrir</button>
-          <button class="btn-buy">Comprar</button>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img"><span>🎙️</span></div>
-        <div class="product-name">Micro Condensador USB</div>
-        <div class="product-price">89,99 €</div>
-        <div class="card-actions">
-          <button class="btn-open" onclick="abrirModal('🎙️','Micro Condensador USB','ClearVoice','Micrófono de condensador con patrón cardioide, conexión USB plug and play, brazo articulado incluido y filtro antipop.',89.99,8)">Abrir</button>
-          <button class="btn-buy">Comprar</button>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
- 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-left">
-      <strong>Autor: Alba Barroso</strong><br />
-      Desarrollo de aplicaciones web<br />
-      2025/2026
-    </div>
-    <div class="footer-right">
-      <span style="color:var(--text-muted);">© 2026 Chollotek S.L</span><br />
-      <a href="#">Aviso legal</a>
-      <a href="#">Política de cookies</a>
-    </div>
-  </footer>
+    <!-- FOOTER -->
+    <%--<jsp:include page="JSP/includes/footer.jsp" />--%>
 
 </body>
 </html>

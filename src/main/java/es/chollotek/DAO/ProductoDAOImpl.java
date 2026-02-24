@@ -21,11 +21,11 @@ public class ProductoDAOImpl implements ProductoDAO {
     private static final Logger logger = Logger.getLogger(ProductoDAOImpl.class.getName());
 
     @Override
-    public Producto buscarPorId(short id, Connection con) throws Exception {
+    public Producto buscarPorId(int id, Connection con) throws Exception {
         String sql = "SELECT * FROM productos WHERE idproducto = ?";
         
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setShort(1, id);
+            ps.setInt(1, id);
             
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -58,12 +58,12 @@ public class ProductoDAOImpl implements ProductoDAO {
     }
 
     @Override
-    public List<Producto> listarPorCategoria(byte idCategoria, Connection con) throws Exception {
+    public List<Producto> listarPorCategoria(int idCategoria, Connection con) throws Exception {
         List<Producto> lista = new ArrayList<>();
         String sql = "SELECT * FROM productos WHERE idcategoria = ? ORDER BY nombre";
         
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setByte(1, idCategoria);
+            ps.setInt(1, idCategoria);
             
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -182,8 +182,8 @@ public class ProductoDAOImpl implements ProductoDAO {
     private Producto mapear(ResultSet rs) throws SQLException {
         Producto producto = new Producto();
         
-        producto.setIdproducto(rs.getShort("idproducto"));
-        producto.setIdcategoria(rs.getByte("idcategoria"));
+        producto.setIdproducto(rs.getInt("idproducto"));
+        producto.setIdcategoria(rs.getInt("idcategoria"));
         producto.setNombre(rs.getString("nombre"));
         producto.setDescripcion(rs.getString("descripcion"));
         producto.setPrecio(rs.getBigDecimal("precio"));

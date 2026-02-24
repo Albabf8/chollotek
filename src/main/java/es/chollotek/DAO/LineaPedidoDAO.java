@@ -31,7 +31,7 @@ public interface LineaPedidoDAO {
      * @param con conexión activa (DEBE estar en transacción)
      * @throws Exception si hay error al actualizar, línea no existe, o cantidad inválida
      */
-    void actualizarCantidad(short idLinea, short cantidad, Connection con) throws Exception;
+    void actualizarCantidad(int idLinea, int cantidad, Connection con) throws Exception;
 
     /**
      * Busca una línea concreta dentro de un pedido identificándola por el producto.
@@ -48,7 +48,7 @@ public interface LineaPedidoDAO {
      * @return LineaPedido si el producto ya está en el carrito, null si no existe
      * @throws Exception si hay error en la consulta SQL o problemas de conexión
      */
-    LineaPedido buscarLinea(short idPedido, short idProducto, Connection con) throws Exception;
+    LineaPedido buscarLinea(int idPedido, int idProducto, Connection con) throws Exception;
 
     /**
      * Elimina una línea concreta del pedido.
@@ -67,7 +67,7 @@ public interface LineaPedidoDAO {
      * @param con conexión activa (DEBE estar en transacción)
      * @throws Exception si hay error al eliminar o la línea no existe
      */
-    void eliminar(short idLinea, Connection con) throws Exception;
+    void eliminar(int idLinea, Connection con) throws Exception;
 
     /**
      * Elimina TODAS las líneas de un pedido de una sola vez.
@@ -92,7 +92,7 @@ public interface LineaPedidoDAO {
      * @param con conexión activa (DEBE estar en transacción)
      * @throws Exception si hay error al eliminar o el pedido no existe
      */
-    void eliminarPorPedido(short idPedido, Connection con) throws Exception;
+    void eliminarPorPedido(int idPedido, Connection con) throws Exception;
 
     /**
      * Inserta una nueva línea en un pedido.
@@ -129,6 +129,6 @@ public interface LineaPedidoDAO {
      * @return lista de líneas del pedido (vacía si el pedido no tiene productos)
      * @throws Exception si hay error en la consulta SQL o problemas de conexión
      */
-    List<LineaPedido> listarPorPedido(short idPedido, Connection con) throws Exception;
+    List<LineaPedido> listarPorPedido(int idPedido, Connection con) throws Exception;
     
 }

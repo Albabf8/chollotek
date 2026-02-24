@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,12 +57,12 @@ public class PedidoDAOImpl implements PedidoDAO{
     }
 
     @Override
-    public short insertar(Pedido pedido, Connection con) throws Exception {
+    public int insertar(Pedido pedido, Connection con) throws Exception {
         String sql = "INSERT INTO pedidos (fecha, estado, idusuario, importe, iva) " +
                      "VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setDate(1, pedido.getFecha());
+            ps.setDate(1, new java.sql.Date(pedido.getFecha().getTime()));
             ps.setString(2, String.valueOf(pedido.getEstado()));
             ps.setInt(3, pedido.getIdusuario());
             ps.setBigDecimal(4, pedido.getImporte());
@@ -73,7 +72,7 @@ public class PedidoDAOImpl implements PedidoDAO{
             // Recuperar el ID autogenerado
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
-                    short idGenerado = keys.getShort(1);
+                    int idGenerado = keys.getInt(1);
                     logger.log(Level.INFO, "Pedido insertado con ID: {0}", idGenerado);
                     return idGenerado;
                 }
@@ -141,8 +140,8 @@ public class PedidoDAOImpl implements PedidoDAO{
 
     private Pedido mapear(ResultSet rs) throws SQLException {
         Pedido p = new Pedido();
-        p.setIdpedido(rs.getShort("idpedido"));
-        p.setFecha(rs.getDate("fecha"));
+        p.setIdpedido(rs.getInt("idpedido"));
+        p.setFecha(new java.util.Date(rs.getDate("fecha").getTime()));
 
         // El estado se guarda como CHAR(1) en BD → recuperar como char
         String estado = rs.getString("estado");
@@ -150,7 +149,7 @@ public class PedidoDAOImpl implements PedidoDAO{
             p.setEstado(estado.charAt(0));
         }
 
-        p.setIdusuario(rs.getShort("idusuario"));
+        p.setIdusuario(rs.getInt("idusuario"));
         p.setImporte(rs.getBigDecimal("importe"));
         p.setIva(rs.getBigDecimal("iva"));
         return p;

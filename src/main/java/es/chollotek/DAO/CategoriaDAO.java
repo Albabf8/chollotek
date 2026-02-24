@@ -22,7 +22,7 @@ public interface CategoriaDAO {
      * @return Categoria con todos sus datos si existe, null si no se encuentra
      * @throws Exception si hay error en la consulta SQL o problemas de conexión
      */
-    Categoria buscarPorId(byte id, Connection con) throws Exception;
+    Categoria buscarPorId(int id, Connection con) throws Exception;
 
     /**
      * Lista todas las categorías disponibles en el sistema.

@@ -38,7 +38,7 @@ public interface UsuarioDAO {
      * @param con conexión activa (debe estar en transacción)
      * @throws Exception si hay error o el usuario no existe
      */
-    void actualizarPassword(short id, String passwordNueva, Connection con) throws Exception;
+    void actualizarPassword(int id, String passwordNueva, Connection con) throws Exception;
 
     /**
      * Actualiza la fecha y hora del último acceso del usuario.
@@ -48,7 +48,7 @@ public interface UsuarioDAO {
      * @param con conexión activa
      * @throws Exception si hay error al actualizar
      */
-    void actualizarUltimoAcceso(short id, Connection con) throws Exception;
+    void actualizarUltimoAcceso(int id, Connection con) throws Exception;
 
     /**
      * Busca un usuario por su email.
@@ -70,7 +70,7 @@ public interface UsuarioDAO {
      * @return UsuarioDTO si existe, null si no se encuentra
      * @throws Exception si hay error en la consulta
      */
-    Usuario buscarPorId(short id, Connection con) throws Exception;
+    Usuario buscarPorId(int id, Connection con) throws Exception;
 
     /**
      * Verifica si un email ya está registrado en la base de datos.

@@ -202,10 +202,10 @@ public class FrontController extends HttpServlet {
             String nombre = request.getParameter("nombre");
 
             // 3. Parsear parámetros numéricos
-            Byte idCategoria = null;
+            Integer idCategoria = null;
             if (idCatStr != null && !idCatStr.trim().isEmpty() && !idCatStr.equals("0")) {
                 try {
-                    idCategoria = Byte.parseByte(idCatStr);
+                    idCategoria = Integer.parseInt(idCatStr);
                 } catch (NumberFormatException e) {
                     // Si no es válido, se ignora
                 }

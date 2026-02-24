@@ -106,7 +106,7 @@ public interface PedidoDAO {
      * @return idpedido generado automáticamente por la base de datos
      * @throws SQLException si hay error al insertar o no se puede obtener el ID generado
      */
-    short insertar(Pedido pedido, Connection con) throws Exception;
+    int insertar(Pedido pedido, Connection con) throws Exception;
 
     /**
      * Lista todos los pedidos finalizados ('f') de un usuario.

@@ -40,11 +40,11 @@ public class UsuarioDAOImpl implements UsuarioDAO{
     }
 
     @Override
-    public Usuario buscarPorId(short id, Connection con) throws Exception {
+    public Usuario buscarPorId(int id, Connection con) throws Exception {
         String sql = "SELECT * FROM usuarios WHERE idusuario = ?";
         
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setShort(1, id);
+            ps.setInt(1, id);
             
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -105,7 +105,7 @@ public class UsuarioDAOImpl implements UsuarioDAO{
             
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
-                    usuario.setIdusuario(keys.getShort(1));
+                    usuario.setIdusuario(keys.getInt(1));
                     logger.log(Level.INFO, "Usuario insertado correctamente: {0} (ID: {1})", new Object[]{usuario.getEmail(), usuario.getIdusuario()});
                 }
             }
@@ -152,12 +152,12 @@ public class UsuarioDAOImpl implements UsuarioDAO{
     }
 
     @Override
-    public void actualizarPassword(short id, String passwordNueva, Connection con) throws Exception {
+    public void actualizarPassword(int id, String passwordNueva, Connection con) throws Exception {
         String sql = "UPDATE usuarios SET password = ? WHERE idusuario = ?";
         
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, passwordNueva);
-            ps.setShort(2, id);
+            ps.setInt(2, id);
             
             int filasAfectadas = ps.executeUpdate();
             
@@ -171,11 +171,11 @@ public class UsuarioDAOImpl implements UsuarioDAO{
     }
 
     @Override
-    public void actualizarUltimoAcceso(short id, Connection con) throws Exception {
+    public void actualizarUltimoAcceso(int id, Connection con) throws Exception {
         String sql = "UPDATE usuarios SET ultimo_acceso = NOW() WHERE idusuario = ?";
         
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setShort(1, id);
+            ps.setInt(1, id);
             
             int filasAfectadas = ps.executeUpdate();
             
@@ -208,7 +208,7 @@ public class UsuarioDAOImpl implements UsuarioDAO{
     private Usuario mapear(ResultSet rs) throws SQLException {
         Usuario usuario = new Usuario();
         
-        usuario.setIdusuario(rs.getShort("idusuario"));
+        usuario.setIdusuario(rs.getInt("idusuario"));
         usuario.setEmail(rs.getString("email"));
         usuario.setPassword(rs.getString("password"));
         usuario.setNombre(rs.getString("nombre"));

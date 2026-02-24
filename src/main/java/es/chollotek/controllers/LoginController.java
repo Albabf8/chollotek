@@ -83,7 +83,7 @@ public class LoginController extends HttpServlet{
             con.commit(); // Confirmar transacción
 
             // 9. Crear sesión
-Carrti            HttpSession sesion = request.getSession(true);
+            HttpSession sesion = request.getSession(true);
             sesion.setAttribute("usuario", usuario);
             sesion.setMaxInactiveInterval(2 * 24 * 60 * 60); // 2 días en segundos
 

@@ -36,11 +36,11 @@ public class CategoriaDAOImpl implements CategoriaDAO{
     }
 
     @Override
-    public Categoria buscarPorId(byte id, Connection con) throws Exception {
+    public Categoria buscarPorId(int id, Connection con) throws Exception {
         String sql = "SELECT * FROM categorias WHERE idcategoria = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setByte(1, id);
+            ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     logger.log(Level.INFO, "Categor\u00eda encontrada: {0}", id);
@@ -55,7 +55,7 @@ public class CategoriaDAOImpl implements CategoriaDAO{
 
     private Categoria mapear(ResultSet rs) throws SQLException {
         Categoria c = new Categoria();
-        c.setIdcategoria(rs.getByte("idcategoria"));
+        c.setIdcategoria(rs.getInt("idcategoria"));
         c.setNombre(rs.getString("nombre"));
         c.setImagen(rs.getString("imagen"));
         return c;

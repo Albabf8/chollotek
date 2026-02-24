@@ -12,7 +12,6 @@ import es.chollotek.beans.Usuario;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.util.Date;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -75,7 +74,7 @@ public class CarritoController extends HttpServlet {
         try {
             // 1. Obtener ID del producto
             String idProductoStr = request.getParameter("idproducto");
-            short idProducto = Short.parseShort(idProductoStr);
+            int idProducto = Integer.parseInt(idProductoStr);
 
             // 2. Verificar si el usuario está logueado
             HttpSession sesion = request.getSession(false);
@@ -99,11 +98,11 @@ public class CarritoController extends HttpServlet {
                     carrito = new Pedido();
                     carrito.setEstado('c');
                     carrito.setIdusuario(usuario.getIdusuario());
-                    carrito.setFecha(new Date(System.currentTimeMillis()));
+                    carrito.setFecha(new java.util.Date());
                     carrito.setImporte(BigDecimal.ZERO);
                     carrito.setIva(BigDecimal.ZERO);
                     
-                    short idCarrito = pedidoDAO.insertar(carrito, con);
+                    int idCarrito = pedidoDAO.insertar(carrito, con);
                     carrito.setIdpedido(idCarrito);
                 }
 
@@ -113,14 +112,14 @@ public class CarritoController extends HttpServlet {
 
                 if (lineaExistente != null) {
                     // Producto ya existe: aumentar cantidad
-                    short nuevaCantidad = (short) (lineaExistente.getCantidad() + 1);
+                    int nuevaCantidad = (lineaExistente.getCantidad() + 1);
                     lineaDAO.actualizarCantidad(lineaExistente.getIdlinea(), nuevaCantidad, con);
                 } else {
                     // Producto nuevo: insertar línea
                     LineaPedido nuevaLinea = new LineaPedido();
                     nuevaLinea.setIdpedido(carrito.getIdpedido());
                     nuevaLinea.setIdproducto(idProducto);
-                    nuevaLinea.setCantidad((short) 1);
+                    nuevaLinea.setCantidad(1);
                     lineaDAO.insertar(nuevaLinea, con);
                 }
 
@@ -157,7 +156,7 @@ public class CarritoController extends HttpServlet {
         
         try {
             String idLineaStr = request.getParameter("idlinea");
-            short idLinea = Short.parseShort(idLineaStr);
+            int idLinea = Integer.parseInt(idLineaStr);
 
             con = ConnectionFactory.getConnection();
             con.setAutoCommit(false);
@@ -166,7 +165,7 @@ public class CarritoController extends HttpServlet {
             LineaPedidoDAO dao = factory.getLineaPedidoDAO();
 
             // Obtener línea actual
-            List<LineaPedido> lineas = dao.listarPorPedido((short) 0, con);
+            List<LineaPedido> lineas = dao.listarPorPedido(0, con);
             LineaPedido linea = null;
             for (LineaPedido l : lineas) {
                 if (l.getIdlinea() == idLinea) {
@@ -176,7 +175,7 @@ public class CarritoController extends HttpServlet {
             }
 
             if (linea != null) {
-                short nuevaCantidad = (short) (linea.getCantidad() + 1);
+                int nuevaCantidad = (linea.getCantidad() + 1);
                 dao.actualizarCantidad(idLinea, nuevaCantidad, con);
                 recalcularImporteCarrito(linea.getIdpedido(), con);
             }
@@ -204,7 +203,7 @@ public class CarritoController extends HttpServlet {
         
         try {
             String idLineaStr = request.getParameter("idlinea");
-            short idLinea = Short.parseShort(idLineaStr);
+            int idLinea = Integer.parseInt(idLineaStr);
 
             con = ConnectionFactory.getConnection();
             con.setAutoCommit(false);
@@ -238,7 +237,7 @@ public class CarritoController extends HttpServlet {
         
         try {
             String idLineaStr = request.getParameter("idlinea");
-            short idLinea = Short.parseShort(idLineaStr);
+            int idLinea = Integer.parseInt(idLineaStr);
 
             con = ConnectionFactory.getConnection();
             con.setAutoCommit(false);
@@ -312,7 +311,7 @@ public class CarritoController extends HttpServlet {
      * Recalcula el importe total e IVA de un carrito.
      * Suma todas las líneas (cantidad × precio).
      */
-    private void recalcularImporteCarrito(short idPedido, Connection con) throws Exception {
+    private void recalcularImporteCarrito(int idPedido, Connection con) throws Exception {
         MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
         LineaPedidoDAO lineaDAO = factory.getLineaPedidoDAO();
         ProductoDAO productoDAO = factory.getProductoDAO();

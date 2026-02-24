@@ -9,8 +9,8 @@ import java.math.BigDecimal;
  */
 public class Producto implements Serializable {
 
-    private short idproducto;
-    private byte idcategoria;
+    private int idproducto;
+    private int idcategoria;
     private String nombre;
     private String descripcion;
     private BigDecimal precio;
@@ -21,19 +21,19 @@ public class Producto implements Serializable {
     }
 
     // Getters y Setters
-    public short getIdproducto() {
+    public int getIdproducto() {
         return idproducto;
     }
 
-    public void setIdproducto(short idproducto) {
+    public void setIdproducto(int idproducto) {
         this.idproducto = idproducto;
     }
 
-    public byte getIdcategoria() {
+    public int getIdcategoria() {
         return idcategoria;
     }
 
-    public void setIdcategoria(byte idcategoria) {
+    public void setIdcategoria(int idcategoria) {
         this.idcategoria = idcategoria;
     }
 

@@ -42,7 +42,7 @@ public interface ProductoDAO {
      * @return Producto con todos sus datos si existe, null si no se encuentra
      * @throws Exception si hay error en la consulta SQL o problemas de conexión
      */
-    Producto buscarPorId(short id, Connection con) throws Exception;
+    Producto buscarPorId(int id, Connection con) throws Exception;
 
     /**
      * Lista los productos de una categoría específica.
@@ -57,7 +57,7 @@ public interface ProductoDAO {
      * @return lista de productos de esa categoría (vacía si no hay productos en ella)
      * @throws Exception si hay error en la consulta SQL o problemas de conexión
      */
-    List<Producto> listarPorCategoria(byte idCategoria, Connection con) throws Exception;
+    List<Producto> listarPorCategoria(int idCategoria, Connection con) throws Exception;
 
     /**
      * Lista todos los productos disponibles en la tienda.
