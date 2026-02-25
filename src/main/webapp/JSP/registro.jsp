@@ -183,7 +183,7 @@
         </div>
     </div>
 
-     <%--<jsp:include page="includes/footer.jsp" />--%>
+     <jsp:include page="../INC/footer.jsp" />
 
 </body>
 </html>

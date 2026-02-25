@@ -16,7 +16,7 @@
 </head>
 <body>
     
-    <jsp:include page="INC/header.jsp" />
+    <jsp:include page="../INC/header.jsp" />
 
     <div class="container-form">
         <div class="form-card">
@@ -63,7 +63,7 @@
         </div>
     </div>
 
-    <jsp:include page="includes/footer.jsp" />
+    <jsp:include page="../INC/footer.jsp" />
 
 </body>
 </html>
