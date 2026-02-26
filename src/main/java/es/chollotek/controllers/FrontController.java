@@ -1,5 +1,6 @@
 package es.chollotek.controllers;
 
+import es.chollotek.DAO.CategoriaDAO;
 import es.chollotek.DAO.ConnectionFactory;
 import es.chollotek.beans.Producto;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import es.chollotek.DAO.ProductoDAO;
 import es.chollotek.DAOFactory.MySQLDAOFactory;
+import es.chollotek.beans.Categoria;
 import java.math.BigDecimal;
 import java.sql.Connection;
 
@@ -34,7 +36,7 @@ public class FrontController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-            doPost(request, response);
+        doPost(request, response);
     }
 
     /**
@@ -128,6 +130,10 @@ public class FrontController extends HttpServlet {
                     url = "index.jsp";
                     break;
 
+                case "verDetalle":
+                    url = accionVerDetalle(request);
+                    break;
+
                 // ═══════════════════════════════════════════════════════
                 // DEFAULT - Página de inicio por defecto
                 // ═══════════════════════════════════════════════════════
@@ -146,11 +152,10 @@ public class FrontController extends HttpServlet {
     // ═════════════════════════════════════════════════════════════════
     // MÉTODOS AUXILIARES - Cada acción en su propio método
     // ═════════════════════════════════════════════════════════════════
-
     /**
      * Muestra la página de inicio con productos aleatorios (landing page).
      * Carga 8 productos aleatorios para mostrar variedad en cada visita.
-     * 
+     *
      * @param request petición HTTP
      * @return URL de la vista a mostrar
      */
@@ -182,10 +187,11 @@ public class FrontController extends HttpServlet {
     }
 
     /**
-     * Filtra productos por categoría, marca y rango de precio.
-     * Implementa la búsqueda avanzada combinando múltiples criterios.
-     * 
-     * @param request petición HTTP con parámetros: idCategoria, marca, precioMin, precioMax
+     * Filtra productos por categoría, marca y rango de precio. Implementa la
+     * búsqueda avanzada combinando múltiples criterios.
+     *
+     * @param request petición HTTP con parámetros: idCategoria, marca,
+     * precioMin, precioMax
      * @return URL de la vista a mostrar
      */
     private String accionFiltrar(HttpServletRequest request) {
@@ -267,9 +273,9 @@ public class FrontController extends HttpServlet {
     }
 
     /**
-     * Búsqueda simple por texto en el nombre de los productos.
-     * Busca productos que contengan el texto en su nombre (LIKE %texto%).
-     * 
+     * Búsqueda simple por texto en el nombre de los productos. Busca productos
+     * que contengan el texto en su nombre (LIKE %texto%).
+     *
      * @param request petición HTTP con parámetro: textoBusqueda
      * @return URL de la vista a mostrar
      */
@@ -298,8 +304,8 @@ public class FrontController extends HttpServlet {
                 if (resultados.isEmpty()) {
                     request.setAttribute("mensajeInfo", "No se encontraron productos con: \"" + texto + "\"");
                 } else {
-                    request.setAttribute("mensajeInfo", "Se encontraron " + resultados.size() + 
-                                                       " productos para: \"" + texto + "\"");
+                    request.setAttribute("mensajeInfo", "Se encontraron " + resultados.size()
+                            + " productos para: \"" + texto + "\"");
                 }
             } else {
                 request.setAttribute("mensajeError", "Debes introducir un texto para buscar.");
@@ -316,9 +322,9 @@ public class FrontController extends HttpServlet {
     }
 
     /**
-     * Tramita el pedido (finaliza el carrito).
-     * Verifica que el usuario esté logueado antes de permitir la compra.
-     * 
+     * Tramita el pedido (finaliza el carrito). Verifica que el usuario esté
+     * logueado antes de permitir la compra.
+     *
      * @param request petición HTTP con sesión del usuario
      * @return URL de la vista a mostrar
      */
@@ -327,8 +333,8 @@ public class FrontController extends HttpServlet {
 
         // Verificar si el usuario está logueado
         if (sesion == null || sesion.getAttribute("usuario") == null) {
-            request.setAttribute("mensajeError", 
-                "Para tramitar el pedido necesitas iniciar sesión o registrarte.");
+            request.setAttribute("mensajeError",
+                    "Para tramitar el pedido necesitas iniciar sesión o registrarte.");
             return "JSP/login.jsp";
         }
 
@@ -344,7 +350,78 @@ public class FrontController extends HttpServlet {
     public String getServletInfo() {
         return "Front Controller - Controlador principal de Chollotek";
     }
-    }
-        
-    
 
+    /**
+     * Muestra el detalle completo de un producto. Carga el producto, su
+     * categoría y productos relacionados.
+     *
+     * @param request petición HTTP con parámetro "idproducto"
+     * @return URL de la vista de detalle
+     */
+    private String accionVerDetalle(HttpServletRequest request) {
+        Connection con = null;
+        try {
+            // 1. Obtener ID del producto
+            String idProductoStr = request.getParameter("idproducto");
+
+            if (idProductoStr == null || idProductoStr.trim().isEmpty()) {
+                request.setAttribute("mensajeError", "Producto no especificado.");
+                return "FrontController?accion=inicio";
+            }
+
+            short idProducto = Short.parseShort(idProductoStr);
+
+            // 2. Obtener conexión
+            con = ConnectionFactory.getConnection();
+
+            // 3. Obtener DAOs
+            MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+            ProductoDAO productoDAO = factory.getProductoDAO();
+            CategoriaDAO categoriaDAO = factory.getCategoriaDAO();
+
+            // 4. Buscar producto
+            Producto producto = productoDAO.buscarPorId(idProducto, con);
+
+            if (producto == null) {
+                request.setAttribute("mensajeError", "Producto no encontrado.");
+                return "FrontController?accion=inicio";
+            }
+
+            // 5. Buscar categoría del producto
+            Categoria categoria = categoriaDAO.buscarPorId(producto.getIdcategoria(), con);
+
+            // 6. Productos relacionados (misma categoría)
+            List<Producto> relacionados = productoDAO.listarPorCategoria(
+                    producto.getIdcategoria(), con);
+
+            // Eliminar el producto actual de la lista
+            java.util.Iterator<Producto> it = relacionados.iterator();
+            while (it.hasNext()) {
+                Producto p = it.next();
+                if (p.getIdproducto() == idProducto) {
+                    it.remove();
+                }
+            }
+            if (relacionados.size() > 4) {
+                relacionados = relacionados.subList(0, 4);
+            }
+
+            // 7. Guardar en request
+            request.setAttribute("producto", producto);
+            request.setAttribute("categoria", categoria);
+            request.setAttribute("relacionados", relacionados);
+
+        } catch (NumberFormatException e) {
+            request.setAttribute("mensajeError", "ID de producto inválido.");
+            return "FrontController?accion=inicio";
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensajeError", "Error al cargar el producto: " + e.getMessage());
+            return "FrontController?accion=inicio";
+        } finally {
+            ConnectionFactory.closeConnection(con);
+        }
+
+        return "JSP/detalleProducto.jsp";
+    }
+}

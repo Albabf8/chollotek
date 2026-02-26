@@ -5,13 +5,13 @@ es\chollotek\DAO\ConnectionFactory.class
 es\chollotek\DAO\CategoriaDAOImpl.class
 es\chollotek\DAO\PedidoDAO.class
 es\chollotek\controllers\FrontController.class
-es\chollotek\beans\Pedido.class
 es\chollotek\controllers\RegistroController.class
+es\chollotek\beans\Pedido.class
 es\chollotek\beans\Usuario.class
 es\chollotek\controllers\PedidoController.class
 es\chollotek\beans\Producto.class
-es\chollotek\DAO\ProductoDAO.class
 es\chollotek\controllers\PerfilController.class
+es\chollotek\DAO\ProductoDAO.class
 es\chollotek\controllers\AjaxController.class
 es\chollotek\controllers\CarritoController.class
 es\chollotek\filters\UTF8Filter.class

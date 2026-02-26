@@ -41,10 +41,10 @@
                                 <c:when test="${not empty sessionScope.usuario.avatar}">
                                     <img src="${pageContext.request.contextPath}/avatares/${sessionScope.usuario.avatar}" 
                                          alt="Avatar"
-                                         onerror="this.src='${pageContext.request.contextPath}/imagenes/default-avatar.png'">
+                                         onerror="this.src='${pageContext.request.contextPath}/avatares/default-avatar.jpg'">
                                 </c:when>
                                 <c:otherwise>
-                                    <img src="${pageContext.request.contextPath}/imagenes/default-avatar.png" alt="Avatar">
+                                    <img src="${pageContext.request.contextPath}/avatares/default-avatar.jpg" alt="Avatar">
                                 </c:otherwise>
                             </c:choose>
                         </span>
