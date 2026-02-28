@@ -7,6 +7,7 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -121,9 +122,9 @@
         <article class="producto-card">
             <!-- ENLACE A DETALLE EN LA IMAGEN -->
             <a href="${pageContext.request.contextPath}/FrontController?accion=verDetalle&idproducto=${prod.idproducto}">
-                <img src="${pageContext.request.contextPath}/imagenes/imagen/productos/${prod.imagen}" 
+                <img src="${pageContext.request.contextPath}/imagenes/imagen/productos/${prod.imagen}.jpg" 
                      alt="${prod.nombre}"
-                     onerror="this.src='${pageContext.request.contextPath}/imagenes/productos/default.jpg'">
+                     onerror="this.src='${pageContext.request.contextPath}/imagenes/imagen/productos/default.jpg'">
             </a>
             
             <div class="producto-info">
