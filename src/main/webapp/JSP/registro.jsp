@@ -179,6 +179,12 @@
                         Inicia sesión aquí
                     </a>
                 </p>
+                
+                <div style="margin-top: 1rem; text-align: center;">
+                    <a href="${pageContext.request.contextPath}/FrontController?accion=inicio" class="btn btn-secondary btn-sm">
+                        ↩ Volver a la tienda
+                    </a>
+                </div>
             </form>
         </div>
     </div>

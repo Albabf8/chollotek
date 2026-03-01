@@ -8,7 +8,7 @@ import es.chollotek.DAOFactory.MySQLDAOFactory;
 import es.chollotek.beans.LineaPedido;
 import es.chollotek.beans.Pedido;
 import es.chollotek.beans.Usuario;
-import es.chollotek.models.MD5;
+import es.chollotek.models.Md5Util;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -57,7 +57,7 @@ public class RegistroController extends HttpServlet {
                 return;
             }
 
-            nuevoUsuario.setPassword(MD5.encriptar(password));
+            nuevoUsuario.setPassword(Md5Util.encriptar(password));
 
             String nombreAvatar = procesarAvatar(request);
             nuevoUsuario.setAvatar(nombreAvatar != null ? nombreAvatar : "default-avatar.png");

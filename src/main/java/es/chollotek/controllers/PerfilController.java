@@ -4,7 +4,7 @@ import es.chollotek.DAO.ConnectionFactory;
 import es.chollotek.DAO.UsuarioDAO;
 import es.chollotek.DAOFactory.MySQLDAOFactory;
 import es.chollotek.beans.Usuario;
-import es.chollotek.models.MD5;
+import es.chollotek.models.Md5Util;
 import java.io.IOException;
 import java.sql.Connection;
 import javax.servlet.ServletException;
@@ -122,7 +122,7 @@ public class PerfilController extends HttpServlet{
                 return "JSP/privadas/perfil.jsp";
             }
 
-            String passwordActualMD5 = MD5.encriptar(passwordActual);
+            String passwordActualMD5 = Md5Util.encriptar(passwordActual);
             if (!usuario.getPassword().equals(passwordActualMD5)) {
                 request.setAttribute("mensajeError", "La contraseña actual es incorrecta.");
                 return "JSP/privadas/perfil.jsp";
@@ -135,7 +135,7 @@ public class PerfilController extends HttpServlet{
             MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
             UsuarioDAO dao = factory.getUsuarioDAO();
 
-            String passwordNuevaMD5 = MD5.encriptar(passwordNueva);
+            String passwordNuevaMD5 = Md5Util.encriptar(passwordNueva);
             dao.actualizarPassword(usuario.getIdusuario(), passwordNuevaMD5, con);
 
             con.commit();

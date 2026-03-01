@@ -1,4 +1,3 @@
-
 package es.chollotek.models;
 
 import java.math.BigInteger;
@@ -9,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author Alba
  */
-public class MD5 {
+public class Md5Util {
     /**
      * Encripta un texto en MD5.
      * 

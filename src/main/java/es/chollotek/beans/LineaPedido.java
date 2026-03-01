@@ -12,12 +12,12 @@ public class LineaPedido implements Serializable {
     private int idpedido;
     private int idproducto;
     private int cantidad;
-
+    private Producto producto;
 
     public LineaPedido() {
     }
 
-    //Getters y Setters
+    // Getters y Setters
 
     public int getIdlinea() {
         return idlinea;
@@ -51,9 +51,18 @@ public class LineaPedido implements Serializable {
         this.cantidad = cantidad;
     }
 
+    public Producto getProducto() {
+        return producto;
+    }
+
+    public void setProducto(Producto producto) {
+        this.producto = producto;
+    }
+
     @Override
     public String toString() {
-        return "LineaPedido{" + "idlinea=" + idlinea + ", idpedido=" + idpedido + ", producto=" + idproducto + ", cantidad=" + cantidad + '}';
+        return "LineaPedido{" + "idlinea=" + idlinea + ", idpedido=" + idpedido + ", producto=" + idproducto
+                + ", cantidad=" + cantidad + '}';
     }
 
 }
