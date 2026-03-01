@@ -2,13 +2,19 @@ package es.chollotek.controllers;
 
 import es.chollotek.DAO.ConnectionFactory;
 import es.chollotek.DAO.LineaPedidoDAO;
+import es.chollotek.DAO.PedidoDAO;
+import es.chollotek.DAO.ProductoDAO;
 import es.chollotek.DAO.UsuarioDAO;
 import es.chollotek.DAOFactory.MySQLDAOFactory;
 import es.chollotek.beans.LineaPedido;
+import es.chollotek.beans.Pedido;
+import es.chollotek.beans.Producto;
 import es.chollotek.beans.Usuario;
+import java.math.BigDecimal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.servlet.ServletException;
@@ -43,6 +49,9 @@ public class AjaxController extends HttpServlet {
 
         if (accion != null) {
             switch (accion) {
+                case "anadirAjax":
+                    anadirProductoAjax(request, response);
+                    break;
                 case "emailExiste":
                     validarEmail(request, response);
                     break;
@@ -233,6 +242,115 @@ public class AjaxController extends HttpServlet {
             }
             e.printStackTrace();
             out.print("{\"error\": \"Error al modificar cantidad: " + e.getMessage() + "\"}");
+        } finally {
+            ConnectionFactory.closeConnection(con);
+            out.flush();
+        }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // AÑADIR PRODUCTO AL CARRITO (AJAX)
+    // ═══════════════════════════════════════════════════
+
+    private void anadirProductoAjax(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        Connection con = null;
+        PrintWriter out = response.getWriter();
+
+        try {
+            String idProductoStr = request.getParameter("idproducto");
+            if (idProductoStr == null || idProductoStr.trim().isEmpty()) {
+                out.print("{\"error\": \"ID de producto no proporcionado\"}");
+                return;
+            }
+
+            int idProducto = Integer.parseInt(idProductoStr);
+
+            HttpSession sesion = request.getSession(false);
+            Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
+
+            if (usuario != null) {
+                // ── USUARIO REGISTRADO: guardar en BD ──
+                con = ConnectionFactory.getConnection();
+                con.setAutoCommit(false);
+
+                MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+                PedidoDAO pedidoDAO = factory.getPedidoDAO();
+                LineaPedidoDAO lineaDAO = factory.getLineaPedidoDAO();
+
+                Pedido carrito = pedidoDAO.buscarCarrito(usuario.getIdusuario(), con);
+
+                if (carrito == null) {
+                    carrito = new Pedido();
+                    carrito.setEstado('c');
+                    carrito.setIdusuario(usuario.getIdusuario());
+                    carrito.setFecha(new java.util.Date());
+                    carrito.setImporte(BigDecimal.ZERO);
+                    carrito.setIva(BigDecimal.ZERO);
+                    int idCarrito = pedidoDAO.insertar(carrito, con);
+                    carrito.setIdpedido(idCarrito);
+                }
+
+                LineaPedido lineaExistente = lineaDAO.buscarLinea(carrito.getIdpedido(), idProducto, con);
+
+                if (lineaExistente != null) {
+                    lineaDAO.actualizarCantidad(lineaExistente.getIdlinea(),
+                            lineaExistente.getCantidad() + 1, con);
+                } else {
+                    LineaPedido nuevaLinea = new LineaPedido();
+                    nuevaLinea.setIdpedido(carrito.getIdpedido());
+                    nuevaLinea.setIdproducto(idProducto);
+                    nuevaLinea.setCantidad(1);
+                    lineaDAO.insertar(nuevaLinea, con);
+                }
+
+                con.commit();
+
+            } else {
+                // ── USUARIO ANÓNIMO: guardar en sesión ──
+                HttpSession sesionAnonima = request.getSession(true);
+                List<LineaPedido> carritoSesion =
+                        (List<LineaPedido>) sesionAnonima.getAttribute("carritoAnonimo");
+                if (carritoSesion == null) {
+                    carritoSesion = new ArrayList<>();
+                }
+
+                boolean encontrado = false;
+                for (LineaPedido l : carritoSesion) {
+                    if (l.getIdproducto() == idProducto) {
+                        l.setCantidad(l.getCantidad() + 1);
+                        encontrado = true;
+                        break;
+                    }
+                }
+
+                if (!encontrado) {
+                    con = ConnectionFactory.getConnection();
+                    MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+                    ProductoDAO productoDAO = factory.getProductoDAO();
+                    Producto producto = productoDAO.buscarPorId(idProducto, con);
+
+                    LineaPedido nueva = new LineaPedido();
+                    nueva.setIdproducto(idProducto);
+                    nueva.setCantidad(1);
+                    nueva.setProducto(producto);
+                    carritoSesion.add(nueva);
+                }
+
+                sesionAnonima.setAttribute("carritoAnonimo", carritoSesion);
+            }
+
+            out.print("{\"exito\": true}");
+
+        } catch (NumberFormatException e) {
+            out.print("{\"error\": \"ID de producto inválido\"}");
+        } catch (Exception e) {
+            if (con != null) {
+                try { con.rollback(); } catch (Exception ex) { }
+            }
+            e.printStackTrace();
+            out.print("{\"error\": \"Error al añadir el producto: " + e.getMessage() + "\"}");
         } finally {
             ConnectionFactory.closeConnection(con);
             out.flush();

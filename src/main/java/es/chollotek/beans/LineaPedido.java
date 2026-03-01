@@ -7,17 +7,18 @@ import java.io.Serializable;
  * @author Alba
  */
 public class LineaPedido implements Serializable {
-
+    
     private int idlinea;
     private int idpedido;
     private int idproducto;
     private int cantidad;
-    private Producto producto;
+
+    private Producto producto;  
 
     public LineaPedido() {
     }
 
-    // Getters y Setters
+    //Getters y Setters
 
     public int getIdlinea() {
         return idlinea;
@@ -50,7 +51,7 @@ public class LineaPedido implements Serializable {
     public void setCantidad(int cantidad) {
         this.cantidad = cantidad;
     }
-
+    
     public Producto getProducto() {
         return producto;
     }
@@ -59,10 +60,23 @@ public class LineaPedido implements Serializable {
         this.producto = producto;
     }
 
+
     @Override
     public String toString() {
-        return "LineaPedido{" + "idlinea=" + idlinea + ", idpedido=" + idpedido + ", producto=" + idproducto
-                + ", cantidad=" + cantidad + '}';
+        return "LineaPedido{" +
+                "idlinea=" + idlinea +
+                ", idpedido=" + idpedido +
+                ", idproducto=" + idproducto +
+                ", cantidad=" + cantidad +
+                ", producto=" + (producto != null ? producto.getNombre() : "null") +
+                '}';
     }
 
+    public void setUid(String toString) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public Object getUid() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

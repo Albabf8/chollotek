@@ -18,10 +18,10 @@ public class Usuario implements Serializable {
     private String nif;
     private String telefono;
     private String direccion;
-    private String codigo_postal;
+    private String codigoPostal;
     private String localidad;
     private String provincia;
-    private Date ultimo_acceso;
+    private Date ultimoAcceso;
     private String avatar;
 
     public Usuario() {
@@ -92,12 +92,12 @@ public class Usuario implements Serializable {
         this.direccion = direccion;
     }
 
-    public String getCodigo_postal() {
-        return codigo_postal;
+    public String getCodigoPostal() {
+        return codigoPostal;
     }
 
-    public void setCodigo_postal(String codigo_postal) {
-        this.codigo_postal = codigo_postal;
+    public void setCodigoPostal(String codigoPostal) {
+        this.codigoPostal = codigoPostal;
     }
 
     public String getLocalidad() {
@@ -116,12 +116,12 @@ public class Usuario implements Serializable {
         this.provincia = provincia;
     }
 
-    public Date getUltimo_acceso() {
-        return ultimo_acceso;
+    public Date getUltimoAcceso() {
+        return ultimoAcceso;
     }
 
-    public void setUltimo_acceso(Date ultimo_acceso) {
-        this.ultimo_acceso = ultimo_acceso;
+    public void setUltimoAcceso(Date ultimoAcceso) {
+        this.ultimoAcceso = ultimoAcceso;
     }
 
     public String getAvatar() {
@@ -143,10 +143,10 @@ public class Usuario implements Serializable {
         hash = 67 * hash + Objects.hashCode(this.nif);
         hash = 67 * hash + Objects.hashCode(this.telefono);
         hash = 67 * hash + Objects.hashCode(this.direccion);
-        hash = 67 * hash + Objects.hashCode(this.codigo_postal);
+        hash = 67 * hash + Objects.hashCode(this.codigoPostal);
         hash = 67 * hash + Objects.hashCode(this.localidad);
         hash = 67 * hash + Objects.hashCode(this.provincia);
-        hash = 67 * hash + Objects.hashCode(this.ultimo_acceso);
+        hash = 67 * hash + Objects.hashCode(this.ultimoAcceso);
         hash = 67 * hash + Objects.hashCode(this.avatar);
         return hash;
     }
@@ -187,7 +187,7 @@ public class Usuario implements Serializable {
         if (!Objects.equals(this.direccion, other.direccion)) {
             return false;
         }
-        if (!Objects.equals(this.codigo_postal, other.codigo_postal)) {
+        if (!Objects.equals(this.codigoPostal, other.codigoPostal)) {
             return false;
         }
         if (!Objects.equals(this.localidad, other.localidad)) {
@@ -199,7 +199,7 @@ public class Usuario implements Serializable {
         if (!Objects.equals(this.avatar, other.avatar)) {
             return false;
         }
-        return Objects.equals(this.ultimo_acceso, other.ultimo_acceso);
+        return Objects.equals(this.ultimoAcceso, other.ultimoAcceso);
     }
 
     @Override

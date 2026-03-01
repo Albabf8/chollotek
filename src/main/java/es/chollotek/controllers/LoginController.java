@@ -8,7 +8,7 @@ import es.chollotek.DAOFactory.MySQLDAOFactory;
 import es.chollotek.beans.LineaPedido;
 import es.chollotek.beans.Pedido;
 import es.chollotek.beans.Usuario;
-import es.chollotek.models.Md5Util;
+import es.chollotek.models.MD5;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -59,7 +59,7 @@ public class LoginController extends HttpServlet {
                 return;
             }
 
-            String passwordMD5 = Md5Util.encriptar(password);
+            String passwordMD5 = MD5.encriptar(password);
             if (!usuario.getPassword().equals(passwordMD5)) {
                 request.setAttribute("mensajeError", "Email o contraseña incorrectos.");
                 request.setAttribute("emailIntroducido", email);

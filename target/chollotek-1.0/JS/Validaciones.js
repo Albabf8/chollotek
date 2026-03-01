@@ -307,5 +307,3 @@ function mostrarMensaje(mensaje, tipo) {
         alerta.remove();
     }, 3000);
 }
-
-

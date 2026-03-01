@@ -4,7 +4,7 @@ import es.chollotek.DAO.ConnectionFactory;
 import es.chollotek.DAO.UsuarioDAO;
 import es.chollotek.DAOFactory.MySQLDAOFactory;
 import es.chollotek.beans.Usuario;
-import es.chollotek.models.Md5Util;
+import es.chollotek.models.MD5;
 import java.io.IOException;
 import java.sql.Connection;
 import javax.servlet.ServletException;
@@ -31,7 +31,7 @@ public class PerfilController extends HttpServlet{
         
         request.setCharacterEncoding("UTF-8");
         String accion = request.getParameter("accion");
-        String url = "JSP/privadas/perfil.jsp";
+        String url = "JSP/perfil.jsp";
 
         if ("actualizarPerfil".equals(accion)) {
             url = accionActualizarPerfil(request);
@@ -91,7 +91,7 @@ public class PerfilController extends HttpServlet{
             ConnectionFactory.closeConnection(con);
         }
 
-        return "JSP/privadas/perfil.jsp";
+        return "JSP/perfil.jsp";
     }
 
     /**
@@ -119,13 +119,13 @@ public class PerfilController extends HttpServlet{
             // 3. Validar
             if (!passwordNueva.equals(passwordNueva2)) {
                 request.setAttribute("mensajeError", "Las contraseñas nuevas no coinciden.");
-                return "JSP/privadas/perfil.jsp";
+                return "JSP/perfil.jsp";
             }
 
-            String passwordActualMD5 = Md5Util.encriptar(passwordActual);
+            String passwordActualMD5 = MD5.encriptar(passwordActual);
             if (!usuario.getPassword().equals(passwordActualMD5)) {
                 request.setAttribute("mensajeError", "La contraseña actual es incorrecta.");
-                return "JSP/privadas/perfil.jsp";
+                return "JSP/perfil.jsp";
             }
 
             // 4. Actualizar contraseña
@@ -135,7 +135,7 @@ public class PerfilController extends HttpServlet{
             MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
             UsuarioDAO dao = factory.getUsuarioDAO();
 
-            String passwordNuevaMD5 = Md5Util.encriptar(passwordNueva);
+            String passwordNuevaMD5 = MD5.encriptar(passwordNueva);
             dao.actualizarPassword(usuario.getIdusuario(), passwordNuevaMD5, con);
 
             con.commit();
@@ -157,7 +157,7 @@ public class PerfilController extends HttpServlet{
             ConnectionFactory.closeConnection(con);
         }
 
-        return "JSP/privadas/perfil.jsp";
+        return "JSP/perfil.jsp";
     }
 
     @Override

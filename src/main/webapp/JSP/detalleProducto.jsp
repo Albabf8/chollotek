@@ -25,18 +25,18 @@
 
                     <!-- MENSAJES -->
                     <c:if test="${not empty mensajeError}">
-                        <div class="container">
+                        <div class="container container-detalle">
                             <div class="alert alert-error">${mensajeError}</div>
                         </div>
                     </c:if>
                     <c:if test="${not empty mensajeExito}">
-                        <div class="container">
+                        <div class="container container-detalle">
                             <div class="alert alert-success">${mensajeExito}</div>
                         </div>
                     </c:if>
 
                     <!-- BREADCRUMB -->
-                    <div class="container">
+                    <div class="container container-detalle">
                         <nav class="breadcrumb">
                             <a href="${pageContext.request.contextPath}/FrontController?accion=inicio">Inicio</a>
                             <span class="separator">›</span>
@@ -52,7 +52,7 @@
                     </div>
 
                     <!-- DETALLE DEL PRODUCTO -->
-                    <div class="container">
+                    <div class="container container-detalle">
                         <div class="detalle-producto">
 
                             <!-- IMAGEN DEL PRODUCTO -->
@@ -134,56 +134,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- PRODUCTOS RELACIONADOS -->
-                        <c:if test="${not empty relacionados}">
-                            <div class="glow-line"></div>
-
-                            <section class="section">
-                                <h2 class="section-title">Productos relacionados</h2>
-
-                                <div class="product-grid">
-                                    <c:forEach items="${relacionados}" var="prod">
-                                        <article class="product-card">
-                                            <a
-                                                href="${pageContext.request.contextPath}/FrontController?accion=verDetalle&idproducto=${prod.idproducto}">
-                                                <div class="product-img">
-                                                    <img src="${pageContext.request.contextPath}/imagenes/productos/${prod.imagen}"
-                                                        alt="${prod.nombre}"
-                                                        onerror="this.src='${pageContext.request.contextPath}/imagenes/productos/default.jpg'">
-                                                </div>
-                                            </a>
-
-                                            <div class="producto-info">
-                                                <h3>
-                                                    <a
-                                                        href="${pageContext.request.contextPath}/FrontController?accion=verDetalle&idproducto=${prod.idproducto}">
-                                                        ${prod.nombre}
-                                                    </a>
-                                                </h3>
-                                                <c:if test="${not empty prod.marca}">
-                                                    <p class="marca">${prod.marca}</p>
-                                                </c:if>
-                                                <p class="precio">
-                                                    <fmt:formatNumber value="${prod.precio}" type="currency"
-                                                        currencySymbol="€" />
-                                                </p>
-
-                                                <form action="${pageContext.request.contextPath}/CarritoController"
-                                                    method="post">
-                                                    <input type="hidden" name="accion" value="anadir">
-                                                    <input type="hidden" name="idproducto" value="${prod.idproducto}">
-                                                    <button type="submit" class="btn-buy">
-                                                        🛒 Añadir
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </article>
-                                    </c:forEach>
-                                </div>
-                            </section>
-                        </c:if>
-                    </div>
 
                     <!-- FOOTER -->
                     <jsp:include page="../INC/footer.jsp" />

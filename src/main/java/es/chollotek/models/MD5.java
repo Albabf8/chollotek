@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author Alba
  */
-public class Md5Util {
+public class MD5 {
     /**
      * Encripta un texto en MD5.
      * 

@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet(name = "CarritoController", urlPatterns = { "/CarritoController" })
+@WebServlet(name = "CarritoController", urlPatterns = {"/CarritoController"})
 public class CarritoController extends HttpServlet {
 
     private static final BigDecimal IVA = new BigDecimal("0.21");
@@ -38,18 +38,13 @@ public class CarritoController extends HttpServlet {
         if (accion != null) {
             switch (accion) {
                 case "anadir":
-                    if ("true".equals(request.getParameter("ajax"))) {
-                        accionAnadirAjax(request, response);
-                        return; // Stop execution to not redirect
-                    } else {
-                        url = accionAnadir(request, response);
-                    }
+                    url = accionAnadir(request, response);
                     break;
                 case "sumarCantidad":
                     url = accionSumarCantidad(request);
                     break;
                 case "restarCantidad":
-                    url = accionRestarCantidad(request);
+                    url = accionRestarCantidad(request, response);
                     break;
                 case "eliminarProducto":
                     url = accionEliminarProducto(request);
@@ -66,9 +61,8 @@ public class CarritoController extends HttpServlet {
     }
 
     /**
-     * Añade un producto al carrito.
-     * Si el usuario está logueado, lo guarda en BD.
-     * Si es anónimo, lo guarda en sesión con cookie de 2 días.
+     * Añade un producto al carrito. Si el usuario está logueado, lo guarda en
+     * BD. Si es anónimo, lo guarda en sesión con cookie de 2 días.
      */
     private String accionAnadir(HttpServletRequest request, HttpServletResponse response) {
         Connection con = null;
@@ -172,116 +166,8 @@ public class CarritoController extends HttpServlet {
     }
 
     /**
-     * Añade un producto al carrito respondiendo mediante Ajax (JSON).
-     */
-    private void accionAnadirAjax(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("application/json;charset=UTF-8");
-        java.io.PrintWriter out = response.getWriter();
-        Connection con = null;
-
-        try {
-            String idProductoStr = request.getParameter("idproducto");
-            int idProducto = Integer.parseInt(idProductoStr);
-
-            HttpSession sesion = request.getSession(false);
-            Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
-
-            if (usuario != null) {
-                // USUARIO REGISTRADO: guardar en BD
-                con = ConnectionFactory.getConnection();
-                con.setAutoCommit(false);
-
-                MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
-                PedidoDAO pedidoDAO = factory.getPedidoDAO();
-                LineaPedidoDAO lineaDAO = factory.getLineaPedidoDAO();
-
-                Pedido carrito = pedidoDAO.buscarCarrito(usuario.getIdusuario(), con);
-
-                if (carrito == null) {
-                    carrito = new Pedido();
-                    carrito.setEstado('c');
-                    carrito.setIdusuario(usuario.getIdusuario());
-                    carrito.setFecha(new java.util.Date());
-                    carrito.setImporte(BigDecimal.ZERO);
-                    carrito.setIva(BigDecimal.ZERO);
-                    int idCarrito = pedidoDAO.insertar(carrito, con);
-                    carrito.setIdpedido(idCarrito);
-                }
-
-                LineaPedido lineaExistente = lineaDAO.buscarLinea(carrito.getIdpedido(), idProducto, con);
-
-                if (lineaExistente != null) {
-                    lineaDAO.actualizarCantidad(lineaExistente.getIdlinea(), lineaExistente.getCantidad() + 1, con);
-                } else {
-                    LineaPedido nuevaLinea = new LineaPedido();
-                    nuevaLinea.setIdpedido(carrito.getIdpedido());
-                    nuevaLinea.setIdproducto(idProducto);
-                    nuevaLinea.setCantidad(1);
-                    lineaDAO.insertar(nuevaLinea, con);
-                }
-
-                recalcularImporteCarrito(carrito.getIdpedido(), con);
-                con.commit();
-            } else {
-                // USUARIO ANÓNIMO: guardar en sesión
-                HttpSession sesionAnonima = request.getSession(true);
-                List<LineaPedido> carritoSesion = (List<LineaPedido>) sesionAnonima.getAttribute("carritoAnonimo");
-                if (carritoSesion == null) {
-                    carritoSesion = new ArrayList<LineaPedido>();
-                }
-
-                boolean encontrado = false;
-                for (LineaPedido l : carritoSesion) {
-                    if (l.getIdproducto() == idProducto) {
-                        l.setCantidad(l.getCantidad() + 1);
-                        encontrado = true;
-                        break;
-                    }
-                }
-
-                if (!encontrado) {
-                    con = ConnectionFactory.getConnection();
-                    MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
-                    ProductoDAO productoDAO = factory.getProductoDAO();
-                    Producto producto = productoDAO.buscarPorId(idProducto, con);
-
-                    LineaPedido nueva = new LineaPedido();
-                    nueva.setIdproducto(idProducto);
-                    nueva.setCantidad(1);
-                    nueva.setProducto(producto);
-                    carritoSesion.add(nueva);
-                }
-
-                sesionAnonima.setAttribute("carritoAnonimo", carritoSesion);
-
-                // Cookie de 2 días
-                Cookie cookie = new Cookie("carritoActivo", "true");
-                cookie.setMaxAge(2 * 24 * 60 * 60);
-                cookie.setPath("/");
-                response.addCookie(cookie);
-            }
-
-            out.print("{\"exito\": true, \"mensaje\": \"Producto añadido al carrito correctamente\"}");
-
-        } catch (Exception e) {
-            if (con != null) {
-                try {
-                    con.rollback();
-                } catch (Exception ex) {
-                }
-            }
-            e.printStackTrace();
-            out.print("{\"error\": \"Error al añadir producto: " + e.getMessage() + "\"}");
-        } finally {
-            ConnectionFactory.closeConnection(con);
-            out.flush();
-        }
-    }
-
-    /**
-     * Aumenta la cantidad de un producto en el carrito.
-     * Para usuario logueado: actualiza en BD.
-     * Para usuario anónimo: actualiza en sesión.
+     * Aumenta la cantidad de un producto en el carrito. Para usuario logueado:
+     * actualiza en BD. Para usuario anónimo: actualiza en sesión.
      */
     private String accionSumarCantidad(HttpServletRequest request) {
         Connection con = null;
@@ -348,12 +234,11 @@ public class CarritoController extends HttpServlet {
     }
 
     /**
-     * Disminuye la cantidad de un producto en el carrito.
-     * Si llega a 0, elimina la línea.
+     * Disminuye la cantidad de un producto en el carrito. Solo permite
+     * decrementar si la cantidad resultante es >= 1.
      */
-    private String accionRestarCantidad(HttpServletRequest request) {
+    private String accionRestarCantidad(HttpServletRequest request, HttpServletResponse response) {
         Connection con = null;
-
         try {
             HttpSession sesion = request.getSession(false);
             Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
@@ -375,12 +260,13 @@ public class CarritoController extends HttpServlet {
                     List<LineaPedido> lineas = dao.listarPorPedido(carrito.getIdpedido(), con);
                     for (LineaPedido l : lineas) {
                         if (l.getIdlinea() == idLinea) {
-                            if (l.getCantidad() <= 1) {
-                                dao.eliminar(idLinea, con);
-                            } else {
-                                dao.actualizarCantidad(idLinea, l.getCantidad() - 1, con);
+                            // Decrementar solo si la cantidad resultante >= 1
+                            if (l.getCantidad() > 1) {
+                                int nuevaCantidad = l.getCantidad() - 1;
+                                dao.actualizarCantidad(idLinea, nuevaCantidad, con);
+                                recalcularImporteCarrito(carrito.getIdpedido(), con);
                             }
-                            recalcularImporteCarrito(carrito.getIdpedido(), con);
+                            // Si cantidad = 1, no hacer nada
                             break;
                         }
                     }
@@ -394,15 +280,13 @@ public class CarritoController extends HttpServlet {
 
                 List<LineaPedido> carritoSesion = (List<LineaPedido>) sesion.getAttribute("carritoAnonimo");
                 if (carritoSesion != null) {
-                    java.util.Iterator<LineaPedido> it = carritoSesion.iterator();
-                    while (it.hasNext()) {
-                        LineaPedido l = it.next();
+                    for (LineaPedido l : carritoSesion) {
                         if (l.getIdproducto() == idProducto) {
-                            if (l.getCantidad() <= 1) {
-                                it.remove();
-                            } else {
+                            // Decrementar solo si la cantidad resultante >= 1
+                            if (l.getCantidad() > 1) {
                                 l.setCantidad(l.getCantidad() - 1);
                             }
+                            // Si cantidad = 1, no hacer nada
                             break;
                         }
                     }

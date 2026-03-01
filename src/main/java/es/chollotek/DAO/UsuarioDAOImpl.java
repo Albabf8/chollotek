@@ -92,7 +92,7 @@ public class UsuarioDAOImpl implements UsuarioDAO{
             ps.setString(5, usuario.getNif());
             ps.setString(6, usuario.getTelefono());
             ps.setString(7, usuario.getDireccion());
-            ps.setString(8, usuario.getCodigo_postal());
+            ps.setString(8, usuario.getCodigoPostal());
             ps.setString(9, usuario.getLocalidad());
             ps.setString(10, usuario.getProvincia());
             ps.setString(11, usuario.getAvatar());
@@ -134,7 +134,7 @@ public class UsuarioDAOImpl implements UsuarioDAO{
             ps.setString(2, usuario.getApellidos());
             ps.setString(3, usuario.getTelefono());
             ps.setString(4, usuario.getDireccion());
-            ps.setString(5, usuario.getCodigo_postal());
+            ps.setString(5, usuario.getCodigoPostal());
             ps.setString(6, usuario.getLocalidad());
             ps.setString(7, usuario.getProvincia());
             ps.setString(8, usuario.getAvatar());
@@ -216,10 +216,10 @@ public class UsuarioDAOImpl implements UsuarioDAO{
         usuario.setNif(rs.getString("nif"));
         usuario.setTelefono(rs.getString("telefono"));
         usuario.setDireccion(rs.getString("direccion"));
-        usuario.setCodigo_postal(rs.getString("codigo_postal"));
+        usuario.setCodigoPostal(rs.getString("codigo_postal"));
         usuario.setLocalidad(rs.getString("localidad"));
         usuario.setProvincia(rs.getString("provincia"));
-        usuario.setUltimo_acceso(rs.getTimestamp("ultimo_acceso"));
+        usuario.setUltimoAcceso(rs.getTimestamp("ultimo_acceso"));
         usuario.setAvatar(rs.getString("avatar"));
         
         return usuario;

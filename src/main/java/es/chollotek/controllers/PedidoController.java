@@ -7,7 +7,6 @@ import es.chollotek.beans.Pedido;
 import es.chollotek.beans.Usuario;
 import java.io.IOException;
 import java.sql.Connection;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -19,22 +18,20 @@ import javax.servlet.http.HttpSession;
  *
  * @author Alba
  */
-@WebServlet(name = "PedidoController", urlPatterns = { "/PedidoController" })
+    @WebServlet(name = "PedidoController", urlPatterns = {"/PedidoController"})
 
-public class PedidoController extends HttpServlet {
+public class PedidoController extends HttpServlet{
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        
         request.setCharacterEncoding("UTF-8");
         String accion = request.getParameter("accion");
         String url = "JSP/carrito.jsp";
 
         if ("tramitarPedido".equals(accion)) {
             url = accionTramitarPedido(request);
-        } else if ("verPedidos".equals(accion)) {
-            url = accionVerPedidos(request);
         }
 
         response.sendRedirect(url);
@@ -46,15 +43,15 @@ public class PedidoController extends HttpServlet {
      */
     private String accionTramitarPedido(HttpServletRequest request) {
         Connection con = null;
-
+        
         try {
             // 1. Verificar que el usuario esté logueado
             HttpSession sesion = request.getSession(false);
             Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
 
             if (usuario == null) {
-                request.setAttribute("mensajeError",
-                        "Debes iniciar sesión para finalizar la compra.");
+                request.setAttribute("mensajeError", 
+                    "Debes iniciar sesión para finalizar la compra.");
                 return "JSP/login.jsp";
             }
 
@@ -80,61 +77,22 @@ public class PedidoController extends HttpServlet {
             con.commit();
 
             // 5. Mensaje de éxito
-            request.setAttribute("mensajeExito",
-                    "¡Pedido realizado con éxito! Nº pedido: " + carrito.getIdpedido());
+            request.setAttribute("mensajeExito", 
+                "¡Pedido realizado con éxito! Nº pedido: " + carrito.getIdpedido());
 
         } catch (Exception e) {
             if (con != null) {
-                try {
-                    con.rollback();
-                } catch (Exception ex) {
-                }
+                try { con.rollback(); } catch (Exception ex) { }
             }
             e.printStackTrace();
-            request.setAttribute("mensajeError",
-                    "Error al tramitar el pedido: " + e.getMessage());
+            request.setAttribute("mensajeError", 
+                "Error al tramitar el pedido: " + e.getMessage());
             return "JSP/carrito.jsp";
         } finally {
             ConnectionFactory.closeConnection(con);
         }
 
         return "JSP/privadas/pedidoConfirmado.jsp";
-    }
-
-    /**
-     * Muestra el historial de pedidos finalizados del usuario actual.
-     */
-    private String accionVerPedidos(HttpServletRequest request) {
-        Connection con = null;
-
-        try {
-            HttpSession sesion = request.getSession(false);
-            Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
-
-            if (usuario == null) {
-                return "JSP/login.jsp";
-            }
-
-            con = ConnectionFactory.getConnection();
-            MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
-            PedidoDAO dao = factory.getPedidoDAO();
-
-            List<Pedido> misPedidos = dao.listarPedidosFinalizados(usuario.getIdusuario(), con);
-
-            // Set it in session since we are using sendRedirect to render JSP out of
-            // FrontController scope
-            request.getSession().setAttribute("pedidos", misPedidos);
-
-            return "JSP/privadas/pedidos.jsp"; // Enrutado ajustado en caso de venir de FrontController con
-                                               // JSP/privadas/pedidos.jsp
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.getSession().setAttribute("mensajeError", "Error al obtener historial de pedidos.");
-            return "FrontController?accion=inicio";
-        } finally {
-            ConnectionFactory.closeConnection(con);
-        }
     }
 
     @Override

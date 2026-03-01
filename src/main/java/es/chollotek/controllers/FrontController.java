@@ -14,6 +14,7 @@ import es.chollotek.beans.Usuario;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,7 +37,7 @@ public class FrontController extends HttpServlet {
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
-        String url = "index.jsp";
+        String url = "inicio.jsp";
         String accion = request.getParameter("accion");
 
         if (accion != null) {
@@ -83,7 +84,7 @@ public class FrontController extends HttpServlet {
                     break;
 
                 case "verPerfil":
-                    url = "JSP/privadas/perfil.jsp";
+                    url = "JSP/perfil.jsp";
                     break;
 
                 case "verPedidos":
@@ -92,7 +93,7 @@ public class FrontController extends HttpServlet {
 
                 case "logout":
                     request.getSession().invalidate();
-                    url = "index.jsp";
+                    url = "inicio.jsp";
                     break;
 
                 case "verDetalle":
@@ -124,7 +125,7 @@ public class FrontController extends HttpServlet {
         } finally {
             ConnectionFactory.closeConnection(con);
         }
-        return "index.jsp";
+        return "inicio.jsp";
     }
 
     private String accionFiltrar(HttpServletRequest request) {
@@ -180,7 +181,7 @@ public class FrontController extends HttpServlet {
         } finally {
             ConnectionFactory.closeConnection(con);
         }
-        return "index.jsp";
+        return "JSP/resultados.jsp";
     }
 
     private String accionBuscar(HttpServletRequest request) {
@@ -213,42 +214,66 @@ public class FrontController extends HttpServlet {
         } finally {
             ConnectionFactory.closeConnection(con);
         }
-        return "index.jsp";
+        return "JSP/resultados.jsp";
     }
 
     /**
-     * Carga el carrito para mostrarlo.
-     * Si está logueado: carga desde BD.
-     * Si es anónimo: carga desde sesión.
+     * Muestra el contenido del carrito del usuario. Carga las líneas con los
+     * productos completos para mostrar en la vista.
+     *
+     * @param request petición HTTP
+     * @return URL de la vista del carrito
      */
     private String accionVerCarrito(HttpServletRequest request) {
-        HttpSession sesion = request.getSession(false);
-        Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
+        Connection con = null;
 
-        if (usuario != null) {
-            // Usuario logueado: cargar desde BD
-            Connection con = null;
-            try {
-                con = ConnectionFactory.getConnection();
-                MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
-                PedidoDAO pedidoDAO = factory.getPedidoDAO();
-                LineaPedidoDAO lineaDAO = factory.getLineaPedidoDAO();
+        try {
+            // 1. Verificar si hay usuario logueado
+            HttpSession sesion = request.getSession(false);
+            Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
 
-                Pedido carrito = pedidoDAO.buscarCarrito(usuario.getIdusuario(), con);
-                if (carrito != null) {
-                    List<LineaPedido> lineas = lineaDAO.listarPorPedido(carrito.getIdpedido(), con);
-                    request.setAttribute("lineasCarrito", lineas);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                request.setAttribute("mensajeError", "Error al cargar el carrito.");
-            } finally {
-                ConnectionFactory.closeConnection(con);
+            if (usuario == null) {
+                // Usuario anónimo: carrito vacío por ahora
+                request.setAttribute("lineasCarrito", new ArrayList<LineaPedido>());
+                return "JSP/carrito.jsp";
             }
-        } else if (sesion != null) {
-            // Usuario anónimo: cargar desde sesión
-            List<LineaPedido> carritoSesion = (List<LineaPedido>) sesion.getAttribute("carritoAnonimo");
-            request.setAttribute("lineasCarrito", carritoSesion);
+
+            // 2. Obtener conexión
+            con = ConnectionFactory.getConnection();
+
+            // 3. Obtener DAOs
+            MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+            PedidoDAO pedidoDAO = factory.getPedidoDAO();
+            LineaPedidoDAO lineaDAO = factory.getLineaPedidoDAO();
+            ProductoDAO productoDAO = factory.getProductoDAO();
+
+            // 4. Buscar carrito del usuario
+            Pedido carrito = pedidoDAO.buscarCarrito(usuario.getIdusuario(), con);
+
+            if (carrito == null) {
+                // No tiene carrito: mostrar vacío
+                request.setAttribute("lineasCarrito", new ArrayList<LineaPedido>());
+                return "JSP/carrito.jsp";
+            }
+
+            // 5. Obtener líneas del carrito
+            List<LineaPedido> lineas = lineaDAO.listarPorPedido(carrito.getIdpedido(), con);
+
+            // 6. ✅ CARGAR PRODUCTOS COMPLETOS EN CADA LÍNEA
+            for (LineaPedido linea : lineas) {
+                Producto producto = productoDAO.buscarPorId(linea.getIdproducto(), con);
+                linea.setProducto(producto);
+            }
+
+            // 7. Guardar en request
+            request.setAttribute("lineasCarrito", lineas);
+            request.setAttribute("carrito", carrito);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensajeError", "Error al cargar el carrito: " + e.getMessage());
+        } finally {
+            ConnectionFactory.closeConnection(con);
         }
 
         return "JSP/carrito.jsp";
