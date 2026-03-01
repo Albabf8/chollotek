@@ -200,4 +200,19 @@ public class ProductoDAOImpl implements ProductoDAO {
         return producto;
     }
 
+    @Override
+public BigDecimal obtenerPrecioMinimo(Connection con) throws Exception {
+    String sql = "SELECT MIN(precio) AS precio_min FROM productos";
+    
+    try (Statement st = con.createStatement();
+         ResultSet rs = st.executeQuery(sql)) {
+        
+        if (rs.next()) {
+            BigDecimal min = rs.getBigDecimal("precio_min");
+            return (min != null) ? min : BigDecimal.ZERO;
+        }
+    }
+    
+    return BigDecimal.ZERO;
+}
 }

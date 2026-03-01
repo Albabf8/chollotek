@@ -2,8 +2,18 @@ package es.chollotek.controllers;
 
 import es.chollotek.DAO.CategoriaDAO;
 import es.chollotek.DAO.ConnectionFactory;
+import es.chollotek.DAO.LineaPedidoDAO;
+import es.chollotek.DAO.PedidoDAO;
+import es.chollotek.DAO.ProductoDAO;
+import es.chollotek.DAOFactory.MySQLDAOFactory;
+import es.chollotek.beans.Categoria;
+import es.chollotek.beans.LineaPedido;
+import es.chollotek.beans.Pedido;
 import es.chollotek.beans.Producto;
+import es.chollotek.beans.Usuario;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Connection;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,42 +21,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import es.chollotek.DAO.ProductoDAO;
-import es.chollotek.DAOFactory.MySQLDAOFactory;
-import es.chollotek.beans.Categoria;
-import java.math.BigDecimal;
-import java.sql.Connection;
 
-/**
- *
- * @author Alba
- */
 @WebServlet(name = "FrontController", urlPatterns = {"/FrontController"})
 public class FrontController extends HttpServlet {
 
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         doPost(request, response);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -58,32 +42,20 @@ public class FrontController extends HttpServlet {
         if (accion != null) {
             switch (accion) {
 
-                // ═══════════════════════════════════════════════════════
-                // INICIO - Página principal con productos aleatorios
-                // ═══════════════════════════════════════════════════════
                 case "inicio":
                     url = accionInicio(request);
                     break;
 
-                // ═══════════════════════════════════════════════════════
-                // FILTRAR - Búsqueda avanzada con múltiples criterios
-                // ═══════════════════════════════════════════════════════
                 case "filtrar":
                     url = accionFiltrar(request);
                     break;
 
-                // ═══════════════════════════════════════════════════════
-                // BUSCAR - Búsqueda simple por texto
-                // ═══════════════════════════════════════════════════════
                 case "buscar":
                     url = accionBuscar(request);
                     break;
 
-                // ═══════════════════════════════════════════════════════
-                // CARRITO - Visualizar y gestionar carrito
-                // ═══════════════════════════════════════════════════════
                 case "verCarrito":
-                    url = "JSP/carrito.jsp";
+                    url = accionVerCarrito(request);
                     break;
 
                 case "anadir":
@@ -91,20 +63,13 @@ public class FrontController extends HttpServlet {
                 case "restarCantidad":
                 case "vaciarCarrito":
                 case "eliminarProducto":
-                    // Estas acciones se delegan al CarritoController
                     url = "CarritoController";
                     break;
 
-                // ═══════════════════════════════════════════════════════
-                // PEDIDOS - Tramitar compra
-                // ═══════════════════════════════════════════════════════
                 case "tramitarPedido":
                     url = accionTramitarPedido(request);
                     break;
 
-                // ═══════════════════════════════════════════════════════
-                // USUARIO - Login, registro, perfil
-                // ═══════════════════════════════════════════════════════
                 case "verRegistro":
                     url = "JSP/registro.jsp";
                     break;
@@ -134,122 +99,70 @@ public class FrontController extends HttpServlet {
                     url = accionVerDetalle(request);
                     break;
 
-                // ═══════════════════════════════════════════════════════
-                // DEFAULT - Página de inicio por defecto
-                // ═══════════════════════════════════════════════════════
                 default:
                     url = accionInicio(request);
                     break;
             }
         } else {
-            // Si no viene acción, mostrar inicio
             url = accionInicio(request);
         }
 
         request.getRequestDispatcher(url).forward(request, response);
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    // MÉTODOS AUXILIARES - Cada acción en su propio método
-    // ═════════════════════════════════════════════════════════════════
-    /**
-     * Muestra la página de inicio con productos aleatorios (landing page).
-     * Carga 8 productos aleatorios para mostrar variedad en cada visita.
-     *
-     * @param request petición HTTP
-     * @return URL de la vista a mostrar
-     */
     private String accionInicio(HttpServletRequest request) {
         Connection con = null;
         try {
-            // 1. Obtener conexión del pool
             con = ConnectionFactory.getConnection();
-
-            // 2. Obtener DAO
             MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
             ProductoDAO pdao = factory.getProductoDAO();
-
-            // 3. Obtener productos aleatorios (8 para landing)
             List<Producto> lista = pdao.obtenerProductosAleatorios(8, con);
-
-            // 4. Guardar en request para la vista
             request.setAttribute("productos", lista);
-
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("mensajeError", "Error cargando los productos: " + e.getMessage());
         } finally {
-            // 5. SIEMPRE cerrar la conexión (la devuelve al pool)
             ConnectionFactory.closeConnection(con);
         }
-
         return "index.jsp";
     }
 
-    /**
-     * Filtra productos por categoría, marca y rango de precio. Implementa la
-     * búsqueda avanzada combinando múltiples criterios.
-     *
-     * @param request petición HTTP con parámetros: idCategoria, marca,
-     * precioMin, precioMax
-     * @return URL de la vista a mostrar
-     */
     private String accionFiltrar(HttpServletRequest request) {
         Connection con = null;
         try {
-            // 1. Obtener conexión del pool
             con = ConnectionFactory.getConnection();
 
-            // 2. Recoger parámetros del formulario
             String idCatStr = request.getParameter("idCategoria");
             String marca = request.getParameter("marca");
             String precioMinStr = request.getParameter("precioMin");
             String precioMaxStr = request.getParameter("precioMax");
             String nombre = request.getParameter("nombre");
 
-            // 3. Parsear parámetros numéricos
             Integer idCategoria = null;
             if (idCatStr != null && !idCatStr.trim().isEmpty() && !idCatStr.equals("0")) {
-                try {
-                    idCategoria = Integer.parseInt(idCatStr);
-                } catch (NumberFormatException e) {
-                    // Si no es válido, se ignora
-                }
+                try { idCategoria = Integer.parseInt(idCatStr); } catch (NumberFormatException e) { }
             }
 
             BigDecimal precioMin = null;
             if (precioMinStr != null && !precioMinStr.trim().isEmpty()) {
-                try {
-                    precioMin = new BigDecimal(precioMinStr);
-                } catch (NumberFormatException e) {
-                    // Si no es válido, se ignora
-                }
+                try { precioMin = new BigDecimal(precioMinStr); } catch (NumberFormatException e) { }
             }
 
             BigDecimal precioMax = null;
             if (precioMaxStr != null && !precioMaxStr.trim().isEmpty()) {
-                try {
-                    precioMax = new BigDecimal(precioMaxStr);
-                } catch (NumberFormatException e) {
-                    // Si no es válido, se ignora
-                }
+                try { precioMax = new BigDecimal(precioMaxStr); } catch (NumberFormatException e) { }
             }
 
-            // 4. Obtener DAO
             MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
             ProductoDAO pdao = factory.getProductoDAO();
 
-            // 5. Ejecutar filtrado
             List<Producto> filtrados;
             if (idCategoria != null) {
-                // Si hay categoría, filtrar solo por categoría
                 filtrados = pdao.listarPorCategoria(idCategoria, con);
             } else {
-                // Si no, usar filtros combinados
                 filtrados = pdao.buscarPorFiltros(nombre, marca, precioMin, precioMax, con);
             }
 
-            // 6. Guardar resultados y mantener selección en la vista
             request.setAttribute("productos", filtrados);
             request.setAttribute("catSeleccionada", idCatStr);
             request.setAttribute("marcaSeleccionada", marca);
@@ -257,7 +170,6 @@ public class FrontController extends HttpServlet {
             request.setAttribute("precioMaxSeleccionado", precioMaxStr);
             request.setAttribute("nombreBuscado", nombre);
 
-            // 7. Mensaje si no hay resultados
             if (filtrados.isEmpty()) {
                 request.setAttribute("mensajeInfo", "No se encontraron productos con los filtros seleccionados.");
             }
@@ -268,39 +180,23 @@ public class FrontController extends HttpServlet {
         } finally {
             ConnectionFactory.closeConnection(con);
         }
-
         return "index.jsp";
     }
 
-    /**
-     * Búsqueda simple por texto en el nombre de los productos. Busca productos
-     * que contengan el texto en su nombre (LIKE %texto%).
-     *
-     * @param request petición HTTP con parámetro: textoBusqueda
-     * @return URL de la vista a mostrar
-     */
     private String accionBuscar(HttpServletRequest request) {
         Connection con = null;
         try {
-            // 1. Recoger texto de búsqueda
             String texto = request.getParameter("textoBusqueda");
 
             if (texto != null && !texto.trim().isEmpty()) {
-                // 2. Obtener conexión
                 con = ConnectionFactory.getConnection();
-
-                // 3. Obtener DAO
                 MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
                 ProductoDAO pdao = factory.getProductoDAO();
-
-                // 4. Buscar por nombre (usa buscarPorFiltros con solo nombre)
                 List<Producto> resultados = pdao.buscarPorFiltros(texto, null, null, null, con);
 
-                // 5. Guardar resultados
                 request.setAttribute("productos", resultados);
                 request.setAttribute("textoBuscado", texto);
 
-                // 6. Mensaje si no hay resultados
                 if (resultados.isEmpty()) {
                     request.setAttribute("mensajeInfo", "No se encontraron productos con: \"" + texto + "\"");
                 } else {
@@ -317,51 +213,62 @@ public class FrontController extends HttpServlet {
         } finally {
             ConnectionFactory.closeConnection(con);
         }
-
         return "index.jsp";
     }
 
     /**
-     * Tramita el pedido (finaliza el carrito). Verifica que el usuario esté
-     * logueado antes de permitir la compra.
-     *
-     * @param request petición HTTP con sesión del usuario
-     * @return URL de la vista a mostrar
+     * Carga el carrito para mostrarlo.
+     * Si está logueado: carga desde BD.
+     * Si es anónimo: carga desde sesión.
      */
+    private String accionVerCarrito(HttpServletRequest request) {
+        HttpSession sesion = request.getSession(false);
+        Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
+
+        if (usuario != null) {
+            // Usuario logueado: cargar desde BD
+            Connection con = null;
+            try {
+                con = ConnectionFactory.getConnection();
+                MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+                PedidoDAO pedidoDAO = factory.getPedidoDAO();
+                LineaPedidoDAO lineaDAO = factory.getLineaPedidoDAO();
+
+                Pedido carrito = pedidoDAO.buscarCarrito(usuario.getIdusuario(), con);
+                if (carrito != null) {
+                    List<LineaPedido> lineas = lineaDAO.listarPorPedido(carrito.getIdpedido(), con);
+                    request.setAttribute("lineasCarrito", lineas);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("mensajeError", "Error al cargar el carrito.");
+            } finally {
+                ConnectionFactory.closeConnection(con);
+            }
+        } else if (sesion != null) {
+            // Usuario anónimo: cargar desde sesión
+            List<LineaPedido> carritoSesion = (List<LineaPedido>) sesion.getAttribute("carritoAnonimo");
+            request.setAttribute("lineasCarrito", carritoSesion);
+        }
+
+        return "JSP/carrito.jsp";
+    }
+
     private String accionTramitarPedido(HttpServletRequest request) {
         HttpSession sesion = request.getSession(false);
 
-        // Verificar si el usuario está logueado
         if (sesion == null || sesion.getAttribute("usuario") == null) {
             request.setAttribute("mensajeError",
                     "Para tramitar el pedido necesitas iniciar sesión o registrarte.");
             return "JSP/login.jsp";
         }
 
-        // Usuario logueado: delegar al PedidoController
-        // (Aquí se implementará la lógica completa de finalización)
         return "PedidoController";
     }
 
-    /**
-     * Devuelve una descripción breve del servlet.
-     */
-    @Override
-    public String getServletInfo() {
-        return "Front Controller - Controlador principal de Chollotek";
-    }
-
-    /**
-     * Muestra el detalle completo de un producto. Carga el producto, su
-     * categoría y productos relacionados.
-     *
-     * @param request petición HTTP con parámetro "idproducto"
-     * @return URL de la vista de detalle
-     */
     private String accionVerDetalle(HttpServletRequest request) {
         Connection con = null;
         try {
-            // 1. Obtener ID del producto
             String idProductoStr = request.getParameter("idproducto");
 
             if (idProductoStr == null || idProductoStr.trim().isEmpty()) {
@@ -370,16 +277,12 @@ public class FrontController extends HttpServlet {
             }
 
             short idProducto = Short.parseShort(idProductoStr);
-
-            // 2. Obtener conexión
             con = ConnectionFactory.getConnection();
 
-            // 3. Obtener DAOs
             MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
             ProductoDAO productoDAO = factory.getProductoDAO();
             CategoriaDAO categoriaDAO = factory.getCategoriaDAO();
 
-            // 4. Buscar producto
             Producto producto = productoDAO.buscarPorId(idProducto, con);
 
             if (producto == null) {
@@ -387,14 +290,10 @@ public class FrontController extends HttpServlet {
                 return "FrontController?accion=inicio";
             }
 
-            // 5. Buscar categoría del producto
             Categoria categoria = categoriaDAO.buscarPorId(producto.getIdcategoria(), con);
 
-            // 6. Productos relacionados (misma categoría)
-            List<Producto> relacionados = productoDAO.listarPorCategoria(
-                    producto.getIdcategoria(), con);
+            List<Producto> relacionados = productoDAO.listarPorCategoria(producto.getIdcategoria(), con);
 
-            // Eliminar el producto actual de la lista
             java.util.Iterator<Producto> it = relacionados.iterator();
             while (it.hasNext()) {
                 Producto p = it.next();
@@ -406,7 +305,6 @@ public class FrontController extends HttpServlet {
                 relacionados = relacionados.subList(0, 4);
             }
 
-            // 7. Guardar en request
             request.setAttribute("producto", producto);
             request.setAttribute("categoria", categoria);
             request.setAttribute("relacionados", relacionados);
@@ -423,5 +321,10 @@ public class FrontController extends HttpServlet {
         }
 
         return "JSP/detalleProducto.jsp";
+    }
+
+    @Override
+    public String getServletInfo() {
+        return "Front Controller - Controlador principal de Chollotek";
     }
 }

@@ -1,6 +1,7 @@
 package es.chollotek.DAO;
 
 import es.chollotek.beans.LineaPedido;
+import es.chollotek.beans.Producto;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,16 +22,19 @@ public class LineaPedidoDAOImpl implements LineaPedidoDAO{
     @Override
     public List<LineaPedido> listarPorPedido(int idPedido, Connection con) throws Exception {
         List<LineaPedido> lista = new ArrayList<>();
-        String sql = "SELECT * FROM lineaspedidos WHERE idpedido = ?";
+    String sql = "SELECT lp.*, p.nombre, p.marca, p.precio, p.imagen " +
+                 "FROM lineaspedidos lp " +
+                 "JOIN productos p ON lp.idproducto = p.idproducto " +
+                 "WHERE lp.idpedido = ?";
 
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idPedido);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    lista.add(mapear(rs));
-                }
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, idPedido);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                lista.add(mapearConProducto(rs));
             }
         }
+    }
         
         logger.log(Level.INFO, "L\u00edneas del pedido {0}: {1}", new Object[]{idPedido, lista.size()});
         return lista;
@@ -133,5 +137,23 @@ public class LineaPedidoDAOImpl implements LineaPedidoDAO{
         l.setCantidad(rs.getInt("cantidad"));
         return l;
     }
+    
+    private LineaPedido mapearConProducto(ResultSet rs) throws SQLException {
+    LineaPedido l = new LineaPedido();
+    l.setIdlinea(rs.getInt("idlinea"));
+    l.setIdpedido(rs.getInt("idpedido"));
+    l.setIdproducto(rs.getInt("idproducto"));
+    l.setCantidad(rs.getInt("cantidad"));
+
+    Producto p = new Producto();
+    p.setIdproducto(rs.getInt("idproducto"));
+    p.setNombre(rs.getString("nombre"));
+    p.setMarca(rs.getString("marca"));
+    p.setPrecio(rs.getBigDecimal("precio"));
+    p.setImagen(rs.getString("imagen"));
+    l.setProducto(p);
+
+    return l;
+}
     
 }

@@ -13,15 +13,12 @@ public class LineaPedido implements Serializable {
     private int idproducto;
     private int cantidad;
 
+
     public LineaPedido() {
     }
 
-//    public LineaPedido(Producto producto, int cantidad) {
-//        this.producto = producto;
-//        this.cantidad = cantidad;
-//    }
-
     //Getters y Setters
+
     public int getIdlinea() {
         return idlinea;
     }
@@ -59,12 +56,4 @@ public class LineaPedido implements Serializable {
         return "LineaPedido{" + "idlinea=" + idlinea + ", idpedido=" + idpedido + ", producto=" + idproducto + ", cantidad=" + cantidad + '}';
     }
 
-//    // Calcula el precio total (Precio por Cantidad)
-//    public BigDecimal getSubtotal() {
-//        if (producto != null && producto.getPrecio() != null) {
-//            // Multiplicamos el BigDecimal por la cantidad
-//            return producto.getPrecio().multiply(new BigDecimal(this.cantidad));
-//        }
-//        return BigDecimal.ZERO;
-//    }
 }

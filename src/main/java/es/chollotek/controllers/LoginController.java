@@ -1,65 +1,56 @@
 package es.chollotek.controllers;
 
 import es.chollotek.DAO.ConnectionFactory;
+import es.chollotek.DAO.LineaPedidoDAO;
+import es.chollotek.DAO.PedidoDAO;
 import es.chollotek.DAO.UsuarioDAO;
 import es.chollotek.DAOFactory.MySQLDAOFactory;
+import es.chollotek.beans.LineaPedido;
+import es.chollotek.beans.Pedido;
 import es.chollotek.beans.Usuario;
 import es.chollotek.models.MD5;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Connection;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-/**
- *
- * @author Alba
- */
+@WebServlet(name = "LoginController", urlPatterns = {"/LoginController"})
+public class LoginController extends HttpServlet {
 
-    @WebServlet(name = "LoginController", urlPatterns = {"/LoginController"})
-
-public class LoginController extends HttpServlet{
-
-    /**
-     * Procesa la petición de login del usuario.
-     * Verifica email y contraseña, actualiza último acceso y crea sesión.
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         request.setCharacterEncoding("UTF-8");
         String url = "JSP/login.jsp";
         Connection con = null;
 
         try {
-            // 1. Recoger parámetros del formulario
             String email = request.getParameter("email");
             String password = request.getParameter("password");
 
-            // 2. Validar que no vengan vacíos
-            if (email == null || email.trim().isEmpty() || 
-                password == null || password.trim().isEmpty()) {
+            if (email == null || email.trim().isEmpty()
+                    || password == null || password.trim().isEmpty()) {
                 request.setAttribute("mensajeError", "Todos los campos son obligatorios.");
                 request.getRequestDispatcher(url).forward(request, response);
                 return;
             }
 
-            // 3. Obtener conexión del pool
             con = ConnectionFactory.getConnection();
-            con.setAutoCommit(false); // Iniciar transacción
+            con.setAutoCommit(false);
 
-            // 4. Obtener DAO
             MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
             UsuarioDAO dao = factory.getUsuarioDAO();
 
-            // 5. Buscar usuario por email
             Usuario usuario = dao.buscarPorEmail(email.trim(), con);
 
-            // 6. Verificar si existe el usuario
             if (usuario == null) {
                 request.setAttribute("mensajeError", "Email o contraseña incorrectos.");
                 request.setAttribute("emailIntroducido", email);
@@ -68,7 +59,6 @@ public class LoginController extends HttpServlet{
                 return;
             }
 
-            // 7. Verificar contraseña (comparar MD5)
             String passwordMD5 = MD5.encriptar(password);
             if (!usuario.getPassword().equals(passwordMD5)) {
                 request.setAttribute("mensajeError", "Email o contraseña incorrectos.");
@@ -78,16 +68,32 @@ public class LoginController extends HttpServlet{
                 return;
             }
 
-            // 8. Login exitoso: actualizar último acceso
+            // Login exitoso: actualizar último acceso
             dao.actualizarUltimoAcceso(usuario.getIdusuario(), con);
-            con.commit(); // Confirmar transacción
+            con.commit();
 
-            // 9. Crear sesión
+            // Crear sesión
             HttpSession sesion = request.getSession(true);
             sesion.setAttribute("usuario", usuario);
-            sesion.setMaxInactiveInterval(2 * 24 * 60 * 60); // 2 días en segundos
+            sesion.setMaxInactiveInterval(2 * 24 * 60 * 60);
 
-            // 10. Redirigir a página principal o a donde venía
+            // Traspasar carrito anónimo si existe
+            // ultimo_acceso era null ANTES de actualizarUltimoAcceso → primera vez = registro
+            // ultimo_acceso NO era null → tiene cuenta, fusionar carrito anónimo con BD
+            List<LineaPedido> carritoAnonimo = (List<LineaPedido>) sesion.getAttribute("carritoAnonimo");
+            if (carritoAnonimo != null && !carritoAnonimo.isEmpty()) {
+                con = ConnectionFactory.getConnection();
+                con.setAutoCommit(false);
+                traspasarCarritoAnonimo(carritoAnonimo, usuario, con);
+                con.commit();
+                sesion.removeAttribute("carritoAnonimo");
+                // Eliminar cookie
+                Cookie cookie = new Cookie("carritoActivo", "");
+                cookie.setMaxAge(0);
+                cookie.setPath("/");
+                response.addCookie(cookie);
+            }
+
             String origen = request.getParameter("origen");
             if (origen != null && !origen.isEmpty()) {
                 url = origen;
@@ -103,18 +109,50 @@ public class LoginController extends HttpServlet{
             request.setAttribute("mensajeError", "Error en el sistema: " + e.getMessage());
             request.getRequestDispatcher("JSP/login.jsp").forward(request, response);
             return;
-            
         } finally {
             ConnectionFactory.closeConnection(con);
         }
 
-        // Redirigir (no forward) para evitar reenvío de formulario
         response.sendRedirect(url);
     }
 
     /**
-     * Maneja peticiones GET redirigiendo a POST.
+     * Fusiona el carrito anónimo con el carrito del usuario en BD.
+     * Si el usuario no tiene carrito en BD, crea uno nuevo.
+     * Si ya tiene carrito, suma las cantidades de productos coincidentes.
      */
+    private void traspasarCarritoAnonimo(List<LineaPedido> carritoAnonimo,
+            Usuario usuario, Connection con) throws Exception {
+
+        MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+        PedidoDAO pedidoDAO = factory.getPedidoDAO();
+        LineaPedidoDAO lineaDAO = factory.getLineaPedidoDAO();
+
+        Pedido carrito = pedidoDAO.buscarCarrito(usuario.getIdusuario(), con);
+        if (carrito == null) {
+            carrito = new Pedido();
+            carrito.setEstado('c');
+            carrito.setIdusuario(usuario.getIdusuario());
+            carrito.setFecha(new java.util.Date());
+            carrito.setImporte(BigDecimal.ZERO);
+            carrito.setIva(BigDecimal.ZERO);
+            int idCarrito = pedidoDAO.insertar(carrito, con);
+            carrito.setIdpedido(idCarrito);
+        }
+
+        for (LineaPedido lineaAnonima : carritoAnonimo) {
+            LineaPedido lineaExistente = lineaDAO.buscarLinea(
+                    carrito.getIdpedido(), lineaAnonima.getIdproducto(), con);
+            if (lineaExistente != null) {
+                lineaDAO.actualizarCantidad(lineaExistente.getIdlinea(),
+                        lineaExistente.getCantidad() + lineaAnonima.getCantidad(), con);
+            } else {
+                lineaAnonima.setIdpedido(carrito.getIdpedido());
+                lineaDAO.insertar(lineaAnonima, con);
+            }
+        }
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -125,5 +163,4 @@ public class LoginController extends HttpServlet{
     public String getServletInfo() {
         return "Login Controller - Autenticación de usuarios";
     }
-    
 }

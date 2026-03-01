@@ -1,17 +1,24 @@
 package es.chollotek.controllers;
 
 import es.chollotek.DAO.ConnectionFactory;
+import es.chollotek.DAO.LineaPedidoDAO;
+import es.chollotek.DAO.PedidoDAO;
 import es.chollotek.DAO.UsuarioDAO;
 import es.chollotek.DAOFactory.MySQLDAOFactory;
+import es.chollotek.beans.LineaPedido;
+import es.chollotek.beans.Pedido;
 import es.chollotek.beans.Usuario;
 import es.chollotek.models.MD5;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,65 +26,45 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import org.apache.commons.beanutils.BeanUtils;
 
-/**
- *
- * @author Alba
- */
-
-    @WebServlet(name = "RegistroController", urlPatterns = {"/RegistroController"})
+@WebServlet(name = "RegistroController", urlPatterns = {"/RegistroController"})
 @MultipartConfig(
-    maxFileSize = 5 * 1024 * 1024,      // 5MB máximo por archivo
-    maxRequestSize = 10 * 1024 * 1024   // 10MB máximo petición completa
+    maxFileSize = 5 * 1024 * 1024,
+    maxRequestSize = 10 * 1024 * 1024
 )
-public class RegistroController extends HttpServlet{
+public class RegistroController extends HttpServlet {
 
     private static final String UPLOAD_DIRECTORY = "avatares";
 
-    /**
-     * Procesa el formulario de registro.
-     * Valida datos, encripta contraseña, guarda avatar y crea usuario.
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         request.setCharacterEncoding("UTF-8");
         String url = "JSP/registro.jsp";
         Connection con = null;
 
         try {
-            // 1. Crear objeto Usuario y cargar datos del formulario
             Usuario nuevoUsuario = new Usuario();
             BeanUtils.populate(nuevoUsuario, request.getParameterMap());
 
-            // 2. Validaciones básicas del lado servidor
             String password = request.getParameter("password");
             String password2 = request.getParameter("password2");
 
-            if (password == null || password.trim().isEmpty() ||
-                !password.equals(password2)) {
+            if (password == null || password.trim().isEmpty()
+                    || !password.equals(password2)) {
                 request.setAttribute("mensajeError", "Las contraseñas no coinciden.");
                 request.getRequestDispatcher(url).forward(request, response);
                 return;
             }
 
-            // 3. Encriptar contraseña en MD5
-            String passwordMD5 = MD5.encriptar(password);
-            nuevoUsuario.setPassword(passwordMD5);
+            nuevoUsuario.setPassword(MD5.encriptar(password));
 
-            // 4. Procesar subida de avatar (si existe)
             String nombreAvatar = procesarAvatar(request);
-            if (nombreAvatar != null) {
-                nuevoUsuario.setAvatar(nombreAvatar);
-            } else {
-                nuevoUsuario.setAvatar("default-avatar.png");
-            }
+            nuevoUsuario.setAvatar(nombreAvatar != null ? nombreAvatar : "default-avatar.png");
 
-            // 5. Obtener conexión e iniciar transacción
             con = ConnectionFactory.getConnection();
             con.setAutoCommit(false);
 
-            // 6. Verificar que el email no existe
             MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
             UsuarioDAO dao = factory.getUsuarioDAO();
 
@@ -88,17 +75,29 @@ public class RegistroController extends HttpServlet{
                 return;
             }
 
-            // 7. Insertar usuario en BD
             dao.insertar(nuevoUsuario, con);
             con.commit();
 
-            // 8. Crear sesión automáticamente (login automático tras registro)
+            // Crear sesión
             HttpSession sesion = request.getSession(true);
             sesion.setAttribute("usuario", nuevoUsuario);
-            sesion.setMaxInactiveInterval(2 * 24 * 60 * 60); // 2 días
+            sesion.setMaxInactiveInterval(2 * 24 * 60 * 60);
 
-            // 9. Redirigir a página principal con mensaje de éxito
-            request.setAttribute("mensajeExito", "¡Registro completado con éxito! Bienvenido/a.");
+            // Traspasar carrito anónimo a BD (usuario recién registrado, ultimo_acceso = null)
+            List<LineaPedido> carritoAnonimo = (List<LineaPedido>) sesion.getAttribute("carritoAnonimo");
+            if (carritoAnonimo != null && !carritoAnonimo.isEmpty()) {
+                con = ConnectionFactory.getConnection();
+                con.setAutoCommit(false);
+                traspasarCarritoAnonimo(carritoAnonimo, nuevoUsuario, con);
+                con.commit();
+                sesion.removeAttribute("carritoAnonimo");
+                // Eliminar cookie
+                Cookie cookie = new Cookie("carritoActivo", "");
+                cookie.setMaxAge(0);
+                cookie.setPath("/");
+                response.addCookie(cookie);
+            }
+
             url = "FrontController?accion=inicio";
 
         } catch (Exception e) {
@@ -109,7 +108,6 @@ public class RegistroController extends HttpServlet{
             request.setAttribute("mensajeError", "Error al registrar usuario: " + e.getMessage());
             request.getRequestDispatcher("JSP/registro.jsp").forward(request, response);
             return;
-            
         } finally {
             ConnectionFactory.closeConnection(con);
         }
@@ -118,40 +116,49 @@ public class RegistroController extends HttpServlet{
     }
 
     /**
-     * Procesa la subida del archivo avatar.
-     * Guarda el archivo en el servidor con nombre único.
-     * 
-     * @param request petición HTTP con el archivo multipart
-     * @return nombre del archivo guardado, o null si no se subió archivo
-     * @throws IOException si hay error al guardar el archivo
-     * @throws ServletException si hay error al procesar el multipart
+     * Traspasa el carrito anónimo a BD al registrarse.
+     * Como es la primera vez, simplemente crea un carrito nuevo con esos productos.
      */
-    private String procesarAvatar(HttpServletRequest request) 
+    private void traspasarCarritoAnonimo(List<LineaPedido> carritoAnonimo,
+            Usuario usuario, Connection con) throws Exception {
+
+        MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+        PedidoDAO pedidoDAO = factory.getPedidoDAO();
+        LineaPedidoDAO lineaDAO = factory.getLineaPedidoDAO();
+
+        Pedido carrito = new Pedido();
+        carrito.setEstado('c');
+        carrito.setIdusuario(usuario.getIdusuario());
+        carrito.setFecha(new java.util.Date());
+        carrito.setImporte(BigDecimal.ZERO);
+        carrito.setIva(BigDecimal.ZERO);
+        int idCarrito = pedidoDAO.insertar(carrito, con);
+        carrito.setIdpedido(idCarrito);
+
+        for (LineaPedido linea : carritoAnonimo) {
+            linea.setIdpedido(idCarrito);
+            lineaDAO.insertar(linea, con);
+        }
+    }
+
+    private String procesarAvatar(HttpServletRequest request)
             throws IOException, ServletException {
-        
+
         Part filePart = request.getPart("avatar");
-        
         if (filePart == null || filePart.getSize() == 0) {
-            return null; // No se subió archivo
+            return null;
         }
 
-        // Obtener nombre original del archivo
         String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-        
-        // Generar nombre único: timestamp + nombre original
         String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
 
-        // Ruta absoluta donde guardar (dentro de webapp/avatares)
         String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIRECTORY;
         File uploadDir = new File(uploadPath);
         if (!uploadDir.exists()) {
             uploadDir.mkdir();
         }
 
-        // Guardar archivo
-        String filePath = uploadPath + File.separator + uniqueFileName;
-        filePart.write(filePath);
-
+        filePart.write(uploadPath + File.separator + uniqueFileName);
         return uniqueFileName;
     }
 
@@ -165,6 +172,4 @@ public class RegistroController extends HttpServlet{
     public String getServletInfo() {
         return "Registro Controller - Registro de nuevos usuarios";
     }
-    
-    
 }

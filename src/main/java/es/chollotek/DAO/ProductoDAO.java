@@ -93,6 +93,8 @@ public interface ProductoDAO {
      * @throws Exception si hay error en la consulta SQL o problemas de conexión
      */
     BigDecimal obtenerPrecioMaximo(Connection con) throws Exception;
+    
+    BigDecimal obtenerPrecioMinimo(Connection con) throws Exception;
 
     /**
      * Obtiene un número determinado de productos de forma aleatoria.
