@@ -88,7 +88,7 @@ public class FrontController extends HttpServlet {
                     break;
 
                 case "verPedidos":
-                    url = "JSP/privadas/pedidos.jsp";
+                     url = accionVerPedidos(request);
                     break;
 
                 case "logout":
@@ -347,6 +347,32 @@ public class FrontController extends HttpServlet {
 
         return "JSP/detalleProducto.jsp";
     }
+    
+    private String accionVerPedidos(HttpServletRequest request) {
+    Connection con = null;
+    try {
+        HttpSession sesion = request.getSession(false);
+        Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
+
+        if (usuario == null) {
+            return "JSP/login.jsp";
+        }
+
+        con = ConnectionFactory.getConnection();
+        MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+        PedidoDAO pedidoDAO = factory.getPedidoDAO();
+
+        List<Pedido> pedidos = pedidoDAO.listarPedidosFinalizados(usuario.getIdusuario(), con);
+        request.setAttribute("pedidos", pedidos);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        request.setAttribute("mensajeError", "Error al cargar los pedidos: " + e.getMessage());
+    } finally {
+        ConnectionFactory.closeConnection(con);
+    }
+    return "JSP/pedidos.jsp";
+}
 
     @Override
     public String getServletInfo() {

@@ -41,10 +41,10 @@
                             class="btn btn-primary">
                             Seguir comprando
                         </a>
-                        <a href="${pageContext.request.contextPath}/PedidoController?accion=verPedidos"
-                            class="btn btn-secondary">
-                            Ver mis pedidos
-                        </a>
+                        <form action="${pageContext.request.contextPath}/FrontController" method="post">
+    <input type="hidden" name="accion" value="verPedidos">
+    <button type="submit" class="btn btn-secondary">Ver mis pedidos</button>
+</form>
                     </div>
                 </div>
 
