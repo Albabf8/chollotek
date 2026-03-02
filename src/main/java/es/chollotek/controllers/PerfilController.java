@@ -39,7 +39,7 @@ public class PerfilController extends HttpServlet{
             url = accionCambiarPassword(request);
         }
 
-        response.sendRedirect(url);
+        request.getRequestDispatcher(url).forward(request, response);
     }
 
     /**
