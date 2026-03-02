@@ -16,6 +16,23 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Mi perfil - Chollotek</title>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/estilo.css">
+                <style>
+                    .avatar-preview {
+                        width: 120px;
+                        height: 120px;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        border: 3px solid #ddd;
+                        display: block;
+                        margin-bottom: 10px;
+                    }
+                    .avatar-wrapper {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 8px;
+                    }
+                </style>
             </head>
 
             <body>
@@ -42,6 +59,21 @@
                                 enctype="multipart/form-data">
 
                                 <input type="hidden" name="accion" value="actualizarPerfil">
+                                
+                                <!-- AVATAR -->
+                                <div class="form-group">
+                                    <label>Avatar:</label>
+                                    <div class="avatar-wrapper">
+                                        <img id="avatarPreview"
+                                             src="${pageContext.request.contextPath}/avatares/${sessionScope.usuario.avatar}"
+                                             alt="Avatar"
+                                             class="avatar-preview"
+                                             onerror="this.src='${pageContext.request.contextPath}/avatares/default-avatar.jpg'"/>
+                                        <input type="file" id="avatar" name="avatar" accept="image/*"
+                                               onchange="previewAvatar(event)">
+                                        <small>Deja vacío para mantener el avatar actual</small>
+                                    </div>
+                                </div>
 
                                 <div class="form-group">
                                     <label>Email:</label>
@@ -151,6 +183,19 @@
 
                 <jsp:include page="../INC/footer.jsp" />
 
+                <script>
+                    function previewAvatar(event) {
+                        const file = event.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                document.getElementById('avatarPreview').src = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    }
+                </script>
+                
             </body>
 
             </html>

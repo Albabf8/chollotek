@@ -5,7 +5,9 @@ import es.chollotek.DAO.UsuarioDAO;
 import es.chollotek.DAOFactory.MySQLDAOFactory;
 import es.chollotek.beans.Usuario;
 import es.chollotek.models.MD5;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -14,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 import org.apache.commons.beanutils.BeanUtils;
 
 /**
@@ -22,8 +25,13 @@ import org.apache.commons.beanutils.BeanUtils;
  */
 
     @WebServlet(name = "PerfilController", urlPatterns = {"/PerfilController"})
-@MultipartConfig
+@MultipartConfig(
+    maxFileSize = 5 * 1024 * 1024,
+    maxRequestSize = 10 * 1024 * 1024
+)
 public class PerfilController extends HttpServlet{
+        
+         private static final String UPLOAD_DIRECTORY = "avatares";
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -64,7 +72,27 @@ public class PerfilController extends HttpServlet{
             BeanUtils.populate(usuarioActualizado, request.getParameterMap());
             usuarioActualizado.setIdusuario(usuarioSesion.getIdusuario());
 
-            // 3. Actualizar en BD
+            // 3. Procesar avatar si se ha subido uno nuevo
+            Part filePart = request.getPart("avatar");
+            if (filePart != null && filePart.getSize() > 0) {
+                String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
+
+                String uploadPath = getServletContext().getRealPath("")
+                        + File.separator + UPLOAD_DIRECTORY;
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdir();
+                }
+
+                filePart.write(uploadPath + File.separator + uniqueFileName);
+                usuarioActualizado.setAvatar(uniqueFileName);
+            } else {
+                // Mantener el avatar actual si no se sube uno nuevo
+                usuarioActualizado.setAvatar(usuarioSesion.getAvatar());
+            }
+            
+            // 4. Actualizar en BD
             con = ConnectionFactory.getConnection();
             con.setAutoCommit(false);
 
@@ -74,7 +102,7 @@ public class PerfilController extends HttpServlet{
             dao.actualizar(usuarioActualizado, con);
             con.commit();
 
-            // 4. Actualizar objeto en sesión
+            // 5. Actualizar objeto en sesión
             Usuario usuarioCompleto = dao.buscarPorId(usuarioSesion.getIdusuario(), con);
             sesion.setAttribute("usuario", usuarioCompleto);
 
