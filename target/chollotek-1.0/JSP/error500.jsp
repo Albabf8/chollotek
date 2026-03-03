@@ -21,41 +21,16 @@
   <jsp:include page="../INC/header.jsp" />
 
   <!-- ERROR 500 -->
-  <div class="error-page">
-    <div class="error-content">
-
-      <div class="error-code">500</div>
-      <div class="error-icon">⚠️</div>
-      <div class="error-title">Error interno del servidor</div>
-      <div class="error-desc">
-        Algo ha ido mal en el servidor. Nuestro equipo ya ha sido notificado.
-        Por favor, inténtalo de nuevo en unos momentos.
-      </div>
-
-      <div class="error-details-box">
-        <span class="detail-label">Detalles del error</span>
-        <%-- Con isErrorPage="true" podemos acceder al objeto exception --%>
-        <code>
-          Error 500 — Internal Server Error<br/>
-          <c:choose>
-            <c:when test="${not empty pageContext.exception}">
-              ${pageContext.exception.class.name}: ${pageContext.exception.message}
-            </c:when>
-            <c:otherwise>
-              javax.servlet.ServletException: Error al procesar la solicitud.
-            </c:otherwise>
-          </c:choose>
-          <br/>Contacta con soporte si el problema persiste.
-        </code>
-      </div>
+<div class="error-icon">
+    <img src="${pageContext.request.contextPath}/IMG/error404.png" 
+         alt="Error 404" 
+         style="width: 200px; height: auto;">
+</div>
 
       <div class="error-actions">
         <a href="${pageContext.request.contextPath}/inicio.jsp" class="btn-home">← Ir a la tienda</a>
         <a href="javascript:location.reload()" class="btn-retry">↺ Reintentar</a>
       </div>
-
-    </div>
-  </div>
 
    <jsp:include page="../INC/footer.jsp" />
 

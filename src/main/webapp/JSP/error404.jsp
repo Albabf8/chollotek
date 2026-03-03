@@ -21,24 +21,16 @@
     <jsp:include page="../INC/header.jsp" />
 
   <!-- ERROR 404 -->
-  <div class="error-page">
-    <div class="error-content">
-
-      <div class="error-code">404</div>
-      <div class="error-icon">🔍</div>
-      <div class="error-title">Página no encontrada</div>
-      <div class="error-desc">
-        La página que estás buscando no existe, ha sido movida o la URL no es correcta.
-        No te preocupes, puedes volver a la tienda y seguir buscando chollos.
-      </div>
+  <div class="error-icon">
+    <img src="${pageContext.request.contextPath}/IMAGE/error404.png" 
+         alt="Error 404" 
+         style="width: 200px; height: auto;">
+</div>
 
       <div class="error-actions">
         <a href="${pageContext.request.contextPath}/inicio.jsp" class="btn-home">← Ir a la tienda</a>
         <a href="javascript:history.back()" class="btn-back">Volver atrás</a>
       </div>
-
-    </div>
-  </div>
 
  <jsp:include page="../INC/footer.jsp" />
 

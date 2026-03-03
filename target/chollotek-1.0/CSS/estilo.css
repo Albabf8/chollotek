@@ -3,6 +3,7 @@
     Author     : Alba
 */
 
+
 /* ── VARIABLES ── */
 :root {
     --bg-deep:    #07050f;
@@ -1418,6 +1419,17 @@ footer {
    PÁGINA DE DETALLE DE PRODUCTO
    ============================================================ */
 
+/* ============================================================
+   PÁGINA DE DETALLE DE PRODUCTO
+   ============================================================ */
+
+/* Contenedor principal del detalle */
+.container-detalle {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
 /* Breadcrumb */
 .breadcrumb {
     display: flex;
@@ -1446,7 +1458,7 @@ footer {
     color: var(--text);
 }
 
-/* Layout del detalle */
+/* Layout del detalle: Imagen izquierda | Info derecha */
 .detalle-producto {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1454,7 +1466,7 @@ footer {
     margin-bottom: 3rem;
 }
 
-/* Imagen principal */
+/* Imagen principal (izquierda, sticky) */
 .detalle-imagen {
     position: sticky;
     top: 100px;
@@ -1486,7 +1498,7 @@ footer {
     z-index: 1;
 }
 
-/* Información del producto */
+/* Información del producto (derecha) */
 .detalle-info {
     display: flex;
     flex-direction: column;
@@ -1558,7 +1570,7 @@ footer {
     color: var(--text);
 }
 
-/* Formulario añadir al carrito */
+/* Formulario añadir al carrito - SIMPLIFICADO (sin selector de cantidad) */
 .form-anadir-carrito {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -1569,46 +1581,7 @@ footer {
     gap: 1rem;
 }
 
-.cantidad-selector {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.cantidad-selector label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.cantidad-input {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.cantidad-input input {
-    flex: 1;
-    max-width: 100px;
-    padding: 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: rgba(255,255,255,.05);
-    color: var(--text);
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-align: center;
-    font-family: 'Orbitron', monospace;
-}
-
-.cantidad-input input:focus {
-    outline: none;
-    border-color: var(--neon-pink);
-    box-shadow: 0 0 0 3px rgba(224,64,251,.15);
-}
-
 .btn-comprar {
-    margin-top: 0.5rem;
     font-size: 0.9rem;
     padding: 1rem 2rem;
 }
@@ -1652,6 +1625,10 @@ footer {
 
 /* Responsive detalle producto */
 @media (max-width: 768px) {
+    .container-detalle {
+        padding: 1rem;
+    }
+
     .detalle-producto {
         grid-template-columns: 1fr;
         gap: 2rem;
@@ -1668,9 +1645,9 @@ footer {
     .precio-grande {
         font-size: 2rem;
     }
-    
-    
-    /* ============================================================
+}
+
+/* ============================================================
    PÁGINAS DE ERROR (404 / 500)
    ============================================================ */
 .error-page {
@@ -1806,4 +1783,396 @@ footer {
     border-color: var(--neon-pink);
 }
 
+
+
+    
+    
+    /* ============================================================
+   DETALLE DE PEDIDO  
+   ============================================================ */
+
+/* Ajuste del contenedor para que fluya en columna */
+.container-detalle-pedido {
+    flex-direction: column;
+    gap: 0;
 }
+
+/* ── Breadcrumb ya está definido: solo añadimos margen inferior ── */
+.container-detalle-pedido .breadcrumb {
+    margin-bottom: 1.5rem;
+}
+
+/* ──────────────────────────────────────────
+   CABECERA DEL PEDIDO
+   ────────────────────────────────────────── */
+.dp-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 24px rgba(124, 58, 237, .12);
+}
+
+.dp-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.dp-titulo {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .08em;
+}
+
+.dp-id {
+    color: var(--neon-pink);
+    text-shadow: 0 0 10px var(--neon-pink);
+}
+
+.dp-badge-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .3rem .9rem;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, .12);
+    border: 1px solid var(--success);
+    color: #6ee7b7;
+    font-size: .78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dp-header-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.dp-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    text-align: right;
+}
+
+.dp-meta-label {
+    font-family: 'Orbitron', monospace;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.dp-meta-value {
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* ──────────────────────────────────────────
+   LAYOUT PRINCIPAL (líneas + resumen)
+   ────────────────────────────────────────── */
+.dp-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* ──────────────────────────────────────────
+   TÍTULO DE SECCIÓN
+   ────────────────────────────────────────── */
+.dp-seccion-titulo {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--neon-pink);
+    letter-spacing: .1em;
+    margin-bottom: 1rem;
+    padding-left: .75rem;
+    border-left: 4px solid var(--neon-pink);
+    text-shadow: 0 0 8px var(--neon-pink);
+}
+
+/* ──────────────────────────────────────────
+   TABLA DE LÍNEAS
+   ────────────────────────────────────────── */
+.dp-tabla-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.dp-tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dp-tabla thead {
+    background: rgba(224, 64, 251, .07);
+}
+
+.dp-tabla th {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    font-family: 'Orbitron', monospace;
+    font-size: .7rem;
+    font-weight: 700;
+    color: var(--neon-pink);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+}
+
+.dp-tabla td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(224, 64, 251, .07);
+    vertical-align: middle;
+    font-size: .85rem;
+    color: var(--text);
+}
+
+.dp-tabla tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.dp-tabla tbody tr {
+    transition: background .2s;
+}
+
+.dp-tabla tbody tr:hover {
+    background: rgba(224, 64, 251, .04);
+}
+
+.dp-col-centro  { text-align: center; }
+.dp-col-derecha { text-align: right;  }
+
+/* ──────────────────────────────────────────
+   CELDA DE PRODUCTO
+   ────────────────────────────────────────── */
+.dp-producto {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dp-img-wrap {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card2);
+}
+
+.dp-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.dp-prod-info {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    min-width: 0;   /* permite text-overflow en flex */
+}
+
+.dp-prod-nombre {
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.35;
+    transition: color .2s;
+}
+
+.dp-prod-nombre:hover {
+    color: var(--neon-pink);
+}
+
+.dp-prod-marca {
+    font-size: .72rem;
+    color: var(--text-muted);
+}
+
+/* ──────────────────────────────────────────
+   BADGES Y PRECIOS EN TABLA
+   ────────────────────────────────────────── */
+.dp-badge-cantidad {
+    display: inline-block;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+    background: rgba(0, 229, 255, .08);
+    border: 1px solid rgba(0, 229, 255, .3);
+    color: var(--neon-blue);
+    font-family: 'Orbitron', monospace;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.dp-precio-unit {
+    color: var(--text-muted);
+    font-size: .82rem;
+}
+
+.dp-subtotal-linea {
+    font-family: 'Orbitron', monospace;
+    font-size: .88rem;
+    font-weight: 700;
+    color: var(--neon-blue);
+    text-shadow: 0 0 8px rgba(0, 229, 255, .35);
+    white-space: nowrap;
+}
+
+/* ──────────────────────────────────────────
+   RESUMEN LATERAL
+   (reutiliza .resumen-card, .resumen-linea,
+    .resumen-total del CSS base)
+   ────────────────────────────────────────── */
+.dp-resumen {
+    position: sticky;
+    top: 90px;
+}
+
+.dp-envio {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    margin-top: 1.25rem;
+    padding: .85rem 1rem;
+    background: rgba(224, 64, 251, .05);
+    border-radius: 10px;
+    border: 1px solid rgba(224, 64, 251, .12);
+}
+
+.dp-envio-item {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .8rem;
+    color: var(--text-muted);
+}
+
+.dp-acciones {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    margin-top: 1.5rem;
+}
+
+/* ──────────────────────────────────────────
+   RESPONSIVE
+   ────────────────────────────────────────── */
+@media (max-width: 960px) {
+    .dp-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .dp-resumen {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .dp-header {
+        flex-direction: column;
+        padding: 1.25rem;
+    }
+
+    .dp-header-meta {
+        gap: 1rem;
+        justify-content: flex-start;
+    }
+
+    .dp-meta-item {
+        text-align: left;
+    }
+
+    /* Tabla → cards apiladas */
+    .dp-tabla thead {
+        display: none;
+    }
+
+    .dp-tabla,
+    .dp-tabla tbody,
+    .dp-tabla tr,
+    .dp-tabla td {
+        display: block;
+        width: 100%;
+    }
+
+    .dp-tabla tr {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+
+    .dp-tabla td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .75rem 1rem;
+        text-align: right;
+        border-bottom: 1px solid rgba(224, 64, 251, .07);
+    }
+
+    .dp-tabla td:last-child {
+        border-bottom: none;
+    }
+
+    /* Etiqueta automática en móvil */
+    .dp-tabla td::before {
+        content: attr(data-label);
+        font-family: 'Orbitron', monospace;
+        font-size: .65rem;
+        color: var(--neon-pink);
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        flex-shrink: 0;
+        margin-right: 1rem;
+        text-align: left;
+    }
+
+    /* La celda de producto ocupa toda la fila y no muestra la etiqueta */
+    .dp-tabla td[data-label="Producto"] {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .5rem;
+    }
+
+    .dp-tabla td[data-label="Producto"]::before {
+        display: none;
+    }
+
+    .dp-col-centro,
+    .dp-col-derecha {
+        text-align: right;
+    }
+
+    .dp-img-wrap {
+        width: 52px;
+        height: 52px;
+    }
+}
+

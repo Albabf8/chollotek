@@ -23,20 +23,19 @@ import org.apache.commons.beanutils.BeanUtils;
  *
  * @author Alba
  */
-
-    @WebServlet(name = "PerfilController", urlPatterns = {"/PerfilController"})
+@WebServlet(name = "PerfilController", urlPatterns = {"/PerfilController"})
 @MultipartConfig(
-    maxFileSize = 5 * 1024 * 1024,
-    maxRequestSize = 10 * 1024 * 1024
+        maxFileSize = 5 * 1024 * 1024,
+        maxRequestSize = 10 * 1024 * 1024
 )
-public class PerfilController extends HttpServlet{
-        
-         private static final String UPLOAD_DIRECTORY = "avatares";
+public class PerfilController extends HttpServlet {
+
+    private static final String UPLOAD_DIRECTORY = "avatares";
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         request.setCharacterEncoding("UTF-8");
         String accion = request.getParameter("accion");
         String url = "JSP/perfil.jsp";
@@ -51,17 +50,24 @@ public class PerfilController extends HttpServlet{
     }
 
     /**
-     * Actualiza los datos editables del perfil.
-     * No se puede cambiar email ni NIF.
+     * Actualiza los datos editables del perfil. No se puede cambiar email ni
+     * NIF.
+     */
+    /**
+     * Procesa la edición de datos del usuario y la subida de un nuevo avatar.
+     * Tras la actualización, se refresca el objeto de sesión con los datos
+     * limpios de la base de datos.
+     *
+     * @return URL de destino.
      */
     private String accionActualizarPerfil(HttpServletRequest request) {
         Connection con = null;
-        
+
         try {
             // 1. Verificar sesión
             HttpSession sesion = request.getSession(false);
-            Usuario usuarioSesion = (sesion != null) ? 
-                (Usuario) sesion.getAttribute("usuario") : null;
+            Usuario usuarioSesion = (sesion != null)
+                    ? (Usuario) sesion.getAttribute("usuario") : null;
 
             if (usuarioSesion == null) {
                 return "JSP/login.jsp";
@@ -91,7 +97,7 @@ public class PerfilController extends HttpServlet{
                 // Mantener el avatar actual si no se sube uno nuevo
                 usuarioActualizado.setAvatar(usuarioSesion.getAvatar());
             }
-            
+
             // 4. Actualizar en BD
             con = ConnectionFactory.getConnection();
             con.setAutoCommit(false);
@@ -110,11 +116,14 @@ public class PerfilController extends HttpServlet{
 
         } catch (Exception e) {
             if (con != null) {
-                try { con.rollback(); } catch (Exception ex) { }
+                try {
+                    con.rollback();
+                } catch (Exception ex) {
+                }
             }
             e.printStackTrace();
-            request.setAttribute("mensajeError", 
-                "Error al actualizar perfil: " + e.getMessage());
+            request.setAttribute("mensajeError",
+                    "Error al actualizar perfil: " + e.getMessage());
         } finally {
             ConnectionFactory.closeConnection(con);
         }
@@ -123,17 +132,20 @@ public class PerfilController extends HttpServlet{
     }
 
     /**
-     * Cambia la contraseña del usuario.
-     * Valida que la contraseña actual sea correcta.
+     * Realiza el cambio de contraseña. Compara el hash MD5 de la contraseña
+     * actual introducida con el almacenado en el objeto de sesión antes de
+     * proceder al cambio. Ambas contraseñas nuevas deben ser idénticas.
+     *
+     * @return URL de retorno al formulario de perfil con mensajes de estado.
      */
     private String accionCambiarPassword(HttpServletRequest request) {
         Connection con = null;
-        
+
         try {
             // 1. Verificar sesión
             HttpSession sesion = request.getSession(false);
-            Usuario usuario = (sesion != null) ? 
-                (Usuario) sesion.getAttribute("usuario") : null;
+            Usuario usuario = (sesion != null)
+                    ? (Usuario) sesion.getAttribute("usuario") : null;
 
             if (usuario == null) {
                 return "JSP/login.jsp";
@@ -176,11 +188,14 @@ public class PerfilController extends HttpServlet{
 
         } catch (Exception e) {
             if (con != null) {
-                try { con.rollback(); } catch (Exception ex) { }
+                try {
+                    con.rollback();
+                } catch (Exception ex) {
+                }
             }
             e.printStackTrace();
-            request.setAttribute("mensajeError", 
-                "Error al cambiar contraseña: " + e.getMessage());
+            request.setAttribute("mensajeError",
+                    "Error al cambiar contraseña: " + e.getMessage());
         } finally {
             ConnectionFactory.closeConnection(con);
         }
@@ -198,6 +213,5 @@ public class PerfilController extends HttpServlet{
     public String getServletInfo() {
         return "Perfil Controller - Gestión del perfil de usuario";
     }
-    
-}
 
+}

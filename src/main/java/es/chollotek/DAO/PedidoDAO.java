@@ -28,6 +28,8 @@ public interface PedidoDAO {
      * @throws Exception si hay error al actualizar o el pedido no existe
      */
     void actualizar(Pedido pedido, Connection con) throws Exception;
+    
+    Pedido buscarPorId(int idPedido, Connection con) throws Exception;
 
     /**
      * Busca el pedido en estado carrito ('c') de un usuario específico.

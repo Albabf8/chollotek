@@ -18,6 +18,24 @@ import java.util.logging.Logger;
 public class PedidoDAOImpl implements PedidoDAO{
     
     private static final Logger logger = Logger.getLogger(PedidoDAOImpl.class.getName());
+    
+    @Override
+    public Pedido buscarPorId(int idPedido, Connection con) throws Exception {
+    String sql = "SELECT * FROM pedidos WHERE idpedido = ?";
+
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, idPedido);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                logger.log(Level.INFO, "Pedido encontrado con ID: {0}", idPedido);
+                return mapear(rs);   // reutiliza el mapear() privado ya existente
+            }
+        }
+    }
+
+    logger.log(Level.INFO, "No se encontró pedido con ID: {0}", idPedido);
+    return null;
+}
 
     @Override
     public Pedido buscarCarrito(int idUsuario, Connection con) throws Exception {

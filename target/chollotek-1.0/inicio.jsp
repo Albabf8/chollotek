@@ -11,6 +11,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chollotek - Tu tienda online</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/estilo.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         /* ── HERO ── */
         .hero {
@@ -24,7 +27,6 @@
             gap: 2rem;
             min-height: 360px;
         }
-
         .hero::before {
             content: '';
             position: absolute;
@@ -34,13 +36,11 @@
                 radial-gradient(ellipse 40% 60% at 80% 30%, rgba(0,229,255,.12), transparent);
             pointer-events: none;
         }
-
         .hero-content {
             position: relative;
             z-index: 1;
             max-width: 520px;
         }
-
         .hero-eyebrow {
             display: inline-block;
             font-family: 'Orbitron', monospace;
@@ -56,7 +56,6 @@
             margin-bottom: 1.25rem;
             text-shadow: 0 0 8px var(--neon-pink);
         }
-
         .hero-title {
             font-family: 'Orbitron', monospace;
             font-size: clamp(2rem, 4vw, 3.2rem);
@@ -66,12 +65,10 @@
             margin-bottom: 1rem;
             text-shadow: 0 0 40px rgba(224,64,251,.3);
         }
-
         .hero-title span {
             color: var(--neon-pink);
             text-shadow: 0 0 24px var(--neon-pink);
         }
-
         .hero-subtitle {
             font-size: .95rem;
             color: var(--text-muted);
@@ -79,13 +76,11 @@
             margin-bottom: 2rem;
             max-width: 420px;
         }
-
         .hero-actions {
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
         }
-
         .btn-hero-primary {
             display: inline-flex;
             align-items: center;
@@ -105,12 +100,10 @@
             box-shadow: 0 0 24px rgba(224,64,251,.5);
             transition: transform .2s, box-shadow .2s;
         }
-
         .btn-hero-primary:hover {
             transform: translateY(-3px);
             box-shadow: 0 0 40px rgba(224,64,251,.8);
         }
-
         .btn-hero-secondary {
             display: inline-flex;
             align-items: center;
@@ -129,13 +122,10 @@
             cursor: pointer;
             transition: background .2s, border-color .2s;
         }
-
         .btn-hero-secondary:hover {
             background: rgba(255,255,255,.06);
             border-color: rgba(255,255,255,.5);
         }
-
-        /* Ilustración decorativa del hero */
         .hero-visual {
             position: relative;
             z-index: 1;
@@ -146,13 +136,11 @@
             align-items: center;
             justify-content: center;
         }
-
         .hero-visual .monitor {
             font-size: 9rem;
             filter: drop-shadow(0 0 32px rgba(0,229,255,.6));
             animation: heroFloat 4s ease-in-out infinite;
         }
-
         .hero-visual .glow-ring {
             position: absolute;
             width: 200px;
@@ -161,25 +149,20 @@
             border: 1px solid rgba(0,229,255,.2);
             animation: ringPulse 3s ease-in-out infinite;
         }
-
         .hero-visual .glow-ring:nth-child(2) {
             width: 160px;
             height: 160px;
             border-color: rgba(224,64,251,.2);
             animation-delay: .75s;
         }
-
         @keyframes heroFloat {
             0%, 100% { transform: translateY(0); }
             50%       { transform: translateY(-14px); }
         }
-
         @keyframes ringPulse {
             0%, 100% { opacity: .4; transform: scale(1); }
             50%       { opacity: .15; transform: scale(1.08); }
         }
-
-        /* ── BADGES STATS ── */
         .hero-stats {
             display: flex;
             gap: 1.5rem;
@@ -188,13 +171,7 @@
             border-top: 1px solid rgba(255,255,255,.07);
             flex-wrap: wrap;
         }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            gap: .15rem;
-        }
-
+        .stat-item { display: flex; flex-direction: column; gap: .15rem; }
         .stat-value {
             font-family: 'Orbitron', monospace;
             font-size: 1.3rem;
@@ -202,22 +179,18 @@
             color: var(--neon-blue);
             text-shadow: 0 0 12px rgba(0,229,255,.5);
         }
-
         .stat-label {
             font-size: .72rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: .08em;
         }
-
-        /* ── SECCIÓN DESTACADOS ── */
         .section-destacados {
             padding: 3rem 2rem 4rem;
             max-width: 1400px;
             margin: 0 auto;
             width: 100%;
         }
-
         .section-header {
             display: flex;
             align-items: baseline;
@@ -225,7 +198,6 @@
             gap: 1rem;
             margin-bottom: 1.75rem;
         }
-
         .section-title-main {
             font-family: 'Orbitron', monospace;
             font-size: 1.3rem;
@@ -236,7 +208,6 @@
             padding-left: .75rem;
             text-shadow: 0 0 12px rgba(224,64,251,.4);
         }
-
         .section-link {
             font-size: .8rem;
             color: var(--neon-pink);
@@ -244,7 +215,6 @@
             transition: opacity .2s;
             white-space: nowrap;
         }
-
         .section-link:hover { opacity: .7; }
 
         /* ── TOAST ── */
@@ -261,11 +231,21 @@
             transition: opacity .3s ease;
             z-index: 9999;
         }
-        #toastCarrito.visible  { opacity: 1; }
-        #toastCarrito.success  { background: #2e7d32; }
-        #toastCarrito.error    { background: #c62828; }
+        #toastCarrito.visible { opacity: 1; }
+        #toastCarrito.success { background: #2e7d32; }
+        #toastCarrito.error   { background: #c62828; }
 
-        /* Responsive hero */
+        /* ── FIX: formulario de tarjeta sin estilos de form ── */
+        .form-detalle-producto {
+            display: contents; /* el form no ocupa espacio visual */
+        }
+        .producto-card-btn {
+            all: unset;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+        }
+
         @media (max-width: 768px) {
             .hero { flex-direction: column; padding: 3rem 1.5rem; min-height: auto; }
             .hero-visual { display: none; }
@@ -276,10 +256,8 @@
 </head>
 <body>
 
-    <!-- HEADER -->
     <jsp:include page="/INC/header.jsp" />
 
-    <!-- MENSAJES -->
     <c:if test="${not empty mensajeError}">
         <div class="alert alert-error">${mensajeError}</div>
     </c:if>
@@ -287,9 +265,7 @@
         <div class="alert alert-success">${mensajeExito}</div>
     </c:if>
 
-    <!-- ══════════════════════════════
-         HERO
-         ══════════════════════════════ -->
+    <!-- HERO -->
     <section class="hero">
         <div class="hero-content">
             <span class="hero-eyebrow">✦ Novedades y chollos</span>
@@ -302,13 +278,9 @@
             </p>
             <div class="hero-actions">
                 <a href="${pageContext.request.contextPath}/FrontController?accion=filtrar"
-                   class="btn-hero-primary">
-                    🔥 Ver ofertas
-                </a>
+                   class="btn-hero-primary">🔥 Ver ofertas</a>
                 <a href="${pageContext.request.contextPath}/FrontController?accion=verRegistro"
-                   class="btn-hero-secondary">
-                    Crear cuenta
-                </a>
+                   class="btn-hero-secondary">Crear cuenta</a>
             </div>
             <div class="hero-stats">
                 <div class="stat-item">
@@ -325,7 +297,6 @@
                 </div>
             </div>
         </div>
-
         <div class="hero-visual">
             <div class="glow-ring"></div>
             <div class="glow-ring"></div>
@@ -333,9 +304,7 @@
         </div>
     </section>
 
-    <!-- ══════════════════════════════
-         PRODUCTOS DESTACADOS
-         ══════════════════════════════ -->
+    <!-- PRODUCTOS DESTACADOS -->
     <section class="section-destacados">
         <div class="section-header">
             <h2 class="section-title-main">⚡ Productos destacados</h2>
@@ -351,27 +320,46 @@
                 <div class="productos-container">
                     <c:forEach items="${productos}" var="prod">
                         <article class="producto-card">
-                            <a href="${pageContext.request.contextPath}/FrontController?accion=verDetalle&idproducto=${prod.idproducto}">
-                                <img src="${pageContext.request.contextPath}/imagenes/imagen/productos/${prod.imagen}.jpg"
-                                     alt="${prod.nombre}"
-                                     onerror="this.src='${pageContext.request.contextPath}/imagenes/imagen/productos/default.jpg'">
-                            </a>
-                            <div class="producto-info">
-                                <h3>
-                                    <a href="${pageContext.request.contextPath}/FrontController?accion=verDetalle&idproducto=${prod.idproducto}">
-                                        ${prod.nombre}
-                                    </a>
-                                </h3>
-                                <p class="marca">${prod.marca}</p>
-                                <p class="precio">
-                                    <fmt:formatNumber value="${prod.precio}" type="currency" currencySymbol="€"/>
-                                </p>
+
+                            <%-- ✅ FIX: formulario POST en lugar de <a href con parámetros> --%>
+                            <form method="post"
+                                  action="${pageContext.request.contextPath}/FrontController"
+                                  class="form-detalle-producto">
+                                <input type="hidden" name="accion"      value="verDetalle">
+                                <input type="hidden" name="idproducto"  value="${prod.idproducto}">
+
+                                <%-- Imagen clickable --%>
+                                <button type="submit" class="producto-card-btn" title="Ver ${prod.nombre}">
+                                    <img src="${pageContext.request.contextPath}/imagenes/imagen/productos/${prod.imagen}.jpg"
+                                         alt="${prod.nombre}"
+                                         onerror="this.src='${pageContext.request.contextPath}/imagenes/imagen/productos/default.jpg'">
+                                </button>
+
+                                <div class="producto-info">
+                                    <%-- Nombre clickable --%>
+                                    <h3>
+                                        <button type="submit" class="producto-card-btn"
+                                                style="font-size:inherit; font-weight:inherit; color:inherit; text-align:left;">
+                                            ${prod.nombre}
+                                        </button>
+                                    </h3>
+                                    <p class="marca">${prod.marca}</p>
+                                    <p class="precio">
+                                        <fmt:formatNumber value="${prod.precio}"
+                                                          type="currency" currencySymbol="€"/>
+                                    </p>
+                                </div>
+                            </form>
+
+                            <%-- Botón carrito fuera del form de detalle --%>
+                            <div class="producto-info" style="padding-top:0;">
                                 <button type="button"
                                         class="btn btn-add-cart"
                                         onclick="anadirAlCarritoAjax(${prod.idproducto}, '${prod.nombre}')">
                                     🛒 Añadir al carrito
                                 </button>
                             </div>
+
                         </article>
                     </c:forEach>
                 </div>
@@ -379,7 +367,6 @@
         </c:choose>
     </section>
 
-    <!-- FOOTER -->
     <jsp:include page="/INC/footer.jsp" />
 
     <div id="toastCarrito"></div>

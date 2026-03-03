@@ -204,7 +204,6 @@ public class AjaxController extends HttpServlet {
                 }
 
                 if (!sumar && cantidadActual <= 1) {
-                    // Eliminar la línea del carrito
                     Iterator<LineaPedido> it = carritoSesion.iterator();
                     while (it.hasNext()) {
                         if (it.next().getIdproducto() == idProducto) {
@@ -249,7 +248,7 @@ public class AjaxController extends HttpServlet {
     }
 
     // ═══════════════════════════════════════════════════
-    // AÑADIR PRODUCTO AL CARRITO (AJAX)
+    // AÑADIR PRODUCTO AL CARRITO (AJAX)  ← MÉTODO CORREGIDO
     // ═══════════════════════════════════════════════════
 
     private void anadirProductoAjax(HttpServletRequest request, HttpServletResponse response)
@@ -259,13 +258,26 @@ public class AjaxController extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         try {
+            // ── Leer idproducto ──
             String idProductoStr = request.getParameter("idproducto");
             if (idProductoStr == null || idProductoStr.trim().isEmpty()) {
                 out.print("{\"error\": \"ID de producto no proporcionado\"}");
                 return;
             }
-
             int idProducto = Integer.parseInt(idProductoStr);
+
+            // ── FIX: Leer cantidad (por defecto 1 si no se envía o es inválida) ──
+            int cantidad = 1;
+            String cantidadStr = request.getParameter("cantidad");
+            if (cantidadStr != null && !cantidadStr.trim().isEmpty()) {
+                try {
+                    cantidad = Integer.parseInt(cantidadStr.trim());
+                    if (cantidad < 1)  cantidad = 1;
+                    if (cantidad > 99) cantidad = 99;
+                } catch (NumberFormatException e) {
+                    cantidad = 1;
+                }
+            }
 
             HttpSession sesion = request.getSession(false);
             Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
@@ -295,13 +307,17 @@ public class AjaxController extends HttpServlet {
                 LineaPedido lineaExistente = lineaDAO.buscarLinea(carrito.getIdpedido(), idProducto, con);
 
                 if (lineaExistente != null) {
-                    lineaDAO.actualizarCantidad(lineaExistente.getIdlinea(),
-                            lineaExistente.getCantidad() + 1, con);
+                    // FIX: sumar la cantidad recibida, no siempre +1
+                    lineaDAO.actualizarCantidad(
+                            lineaExistente.getIdlinea(),
+                            lineaExistente.getCantidad() + cantidad,
+                            con);
                 } else {
                     LineaPedido nuevaLinea = new LineaPedido();
                     nuevaLinea.setIdpedido(carrito.getIdpedido());
                     nuevaLinea.setIdproducto(idProducto);
-                    nuevaLinea.setCantidad(1);
+                    // FIX: insertar directamente con la cantidad solicitada
+                    nuevaLinea.setCantidad(cantidad);
                     lineaDAO.insertar(nuevaLinea, con);
                 }
 
@@ -319,7 +335,8 @@ public class AjaxController extends HttpServlet {
                 boolean encontrado = false;
                 for (LineaPedido l : carritoSesion) {
                     if (l.getIdproducto() == idProducto) {
-                        l.setCantidad(l.getCantidad() + 1);
+                        // FIX: sumar la cantidad recibida, no siempre +1
+                        l.setCantidad(l.getCantidad() + cantidad);
                         encontrado = true;
                         break;
                     }
@@ -333,7 +350,8 @@ public class AjaxController extends HttpServlet {
 
                     LineaPedido nueva = new LineaPedido();
                     nueva.setIdproducto(idProducto);
-                    nueva.setCantidad(1);
+                    // FIX: insertar directamente con la cantidad solicitada
+                    nueva.setCantidad(cantidad);
                     nueva.setProducto(producto);
                     carritoSesion.add(nueva);
                 }

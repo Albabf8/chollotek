@@ -28,8 +28,8 @@ import org.apache.commons.beanutils.BeanUtils;
 
 @WebServlet(name = "RegistroController", urlPatterns = {"/RegistroController"})
 @MultipartConfig(
-    maxFileSize = 5 * 1024 * 1024,
-    maxRequestSize = 10 * 1024 * 1024
+        maxFileSize = 5 * 1024 * 1024,
+        maxRequestSize = 10 * 1024 * 1024
 )
 public class RegistroController extends HttpServlet {
 
@@ -102,7 +102,10 @@ public class RegistroController extends HttpServlet {
 
         } catch (Exception e) {
             if (con != null) {
-                try { con.rollback(); } catch (Exception ex) { }
+                try {
+                    con.rollback();
+                } catch (Exception ex) {
+                }
             }
             e.printStackTrace();
             request.setAttribute("mensajeError", "Error al registrar usuario: " + e.getMessage());
@@ -116,9 +119,10 @@ public class RegistroController extends HttpServlet {
     }
 
     /**
-     * Traspasa el carrito anónimo a BD al registrarse.
-     * Como es la primera vez, simplemente crea un carrito nuevo con esos productos.
+     * Traspasa el carrito anónimo a BD al registrarse. Como es la primera vez,
+     * simplemente crea un carrito nuevo con esos productos.
      */
+
     private void traspasarCarritoAnonimo(List<LineaPedido> carritoAnonimo,
             Usuario usuario, Connection con) throws Exception {
 
@@ -141,6 +145,12 @@ public class RegistroController extends HttpServlet {
         }
     }
 
+    /**
+     * Gestiona la recepción y almacenamiento físico de la imagen.
+     * Genera un nombre de archivo único usando un timestamp para evitar 
+     * sobreescrituras si dos usuarios suben una foto llamada "foto.jpg".
+     * @return El nombre del archivo guardado o {@code null} si no se subió ningún archivo.
+     */
     private String procesarAvatar(HttpServletRequest request)
             throws IOException, ServletException {
 

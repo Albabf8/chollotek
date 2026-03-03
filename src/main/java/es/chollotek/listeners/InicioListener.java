@@ -20,6 +20,11 @@ import java.sql.Connection;
 @WebListener
 public class InicioListener implements ServletContextListener {
 
+    /**
+     * Inicializa los recursos globales al arrancar el servidor. Carga el
+     * catálogo base y los filtros para evitar consultas repetitivas a la base
+     * de datos en cada petición de usuario.
+     */
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext ctx = sce.getServletContext();

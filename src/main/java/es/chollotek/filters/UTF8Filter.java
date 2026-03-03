@@ -8,14 +8,12 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
+
 /**
  *
  * @author Alba
  */
 
-/**
- * Servlet Filter implementation class UTF8Filter
- */
 @WebFilter(filterName = "UTF8Filter", urlPatterns = {"/*"})
 public class UTF8Filter implements Filter {
 
@@ -25,7 +23,7 @@ public class UTF8Filter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         /*
         * Preguntamos si existe el parámetro inicial "requestEncoding" para, en caso contrario, asignarle el valor UTF-8
-        */
+         */
         encoding = filterConfig.getInitParameter("requestEncoding");
         if (encoding == null) {
             encoding = "UTF-8";
@@ -54,7 +52,7 @@ public class UTF8Filter implements Filter {
 
         /*
         * Reenviamos la petción al componente web destino que estabamos filtrando 
-        */
+         */
         chain.doFilter(request, response);
     }
 
