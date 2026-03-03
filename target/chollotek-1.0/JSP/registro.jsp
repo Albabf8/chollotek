@@ -131,7 +131,7 @@
                             <label for="codigo_postal">Código postal: *</label>
                             <input type="text" 
                                    id="codigo_postal" 
-                                   name="codigo_postal" 
+                                   name="codigoPostal" 
                                    required
                                    pattern="[0-9]{5}"
                                    placeholder="10600">
