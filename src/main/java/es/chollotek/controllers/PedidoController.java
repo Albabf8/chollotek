@@ -22,7 +22,6 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "PedidoController", urlPatterns = {"/PedidoController"})
 public class PedidoController extends HttpServlet {
 
-    // ─── POST ────────────────────────────────────────────────────────────────
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -36,7 +35,6 @@ public class PedidoController extends HttpServlet {
                 case "tramitarPedido":
                     url = accionTramitarPedido(request);
                     break;
-                // ✅ FIX: verDetalle también llega por POST (formulario oculto)
                 case "verDetalle":
                     url = accionVerDetalle(request);
                     break;
@@ -49,7 +47,6 @@ public class PedidoController extends HttpServlet {
         request.getRequestDispatcher(url).forward(request, response);
     }
 
-    // ─── GET (por si alguien entra directamente, redirige a pedidos) ─────────
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -57,8 +54,6 @@ public class PedidoController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String accion = request.getParameter("accion");
 
-        // Cualquier GET con verDetalle → redirigir a la lista segura
-        // (evita que alguien teclee la URL con idpedido a mano)
         if ("verDetalle".equals(accion)) {
             response.sendRedirect(request.getContextPath()
                     + "/FrontController?accion=verPedidos");

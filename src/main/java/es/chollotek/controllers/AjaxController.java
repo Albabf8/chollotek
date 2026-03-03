@@ -39,6 +39,13 @@ public class AjaxController extends HttpServlet {
         procesarPeticion(request, response);
     }
 
+    /**
+     * Enrutador principal de peticiones AJAX. Analiza el parámetro 'accion' y
+     * deriva la lógica al método privado correspondiente.
+     *
+     * * @param request La petición del cliente.
+     * @param response La respuesta al cliente (siempre en formato JSON).
+     */
     private void procesarPeticion(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -76,7 +83,6 @@ public class AjaxController extends HttpServlet {
     // ═══════════════════════════════════════════════════
     // VALIDAR EMAIL
     // ═══════════════════════════════════════════════════
-
     private void validarEmail(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -110,7 +116,6 @@ public class AjaxController extends HttpServlet {
     // ═══════════════════════════════════════════════════
     // CALCULAR LETRA NIF
     // ═══════════════════════════════════════════════════
-
     private void calcularLetraNIF(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -142,7 +147,12 @@ public class AjaxController extends HttpServlet {
     // ═══════════════════════════════════════════════════
     // MODIFICAR CANTIDAD (SUMAR / RESTAR)
     // ═══════════════════════════════════════════════════
-
+    /**
+     * Incrementa o decrementa la cantidad de un producto en el carrito. Si la
+     * cantidad llega a 0 en una resta, elimina la línea automáticamente.
+     *
+     * * @param sumar true para incrementar, false para decrementar.
+     */
     private void modificarCantidadCarrito(HttpServletRequest request, HttpServletResponse response,
             boolean sumar) throws IOException {
 
@@ -232,12 +242,18 @@ public class AjaxController extends HttpServlet {
 
         } catch (NumberFormatException e) {
             if (con != null) {
-                try { con.rollback(); } catch (Exception ex) { }
+                try {
+                    con.rollback();
+                } catch (Exception ex) {
+                }
             }
             out.print("{\"error\": \"Parámetros inválidos\"}");
         } catch (Exception e) {
             if (con != null) {
-                try { con.rollback(); } catch (Exception ex) { }
+                try {
+                    con.rollback();
+                } catch (Exception ex) {
+                }
             }
             e.printStackTrace();
             out.print("{\"error\": \"Error al modificar cantidad: " + e.getMessage() + "\"}");
@@ -250,7 +266,6 @@ public class AjaxController extends HttpServlet {
     // ═══════════════════════════════════════════════════
     // AÑADIR PRODUCTO AL CARRITO (AJAX)  ← MÉTODO CORREGIDO
     // ═══════════════════════════════════════════════════
-
     private void anadirProductoAjax(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -272,8 +287,12 @@ public class AjaxController extends HttpServlet {
             if (cantidadStr != null && !cantidadStr.trim().isEmpty()) {
                 try {
                     cantidad = Integer.parseInt(cantidadStr.trim());
-                    if (cantidad < 1)  cantidad = 1;
-                    if (cantidad > 99) cantidad = 99;
+                    if (cantidad < 1) {
+                        cantidad = 1;
+                    }
+                    if (cantidad > 99) {
+                        cantidad = 99;
+                    }
                 } catch (NumberFormatException e) {
                     cantidad = 1;
                 }
@@ -326,8 +345,8 @@ public class AjaxController extends HttpServlet {
             } else {
                 // ── USUARIO ANÓNIMO: guardar en sesión ──
                 HttpSession sesionAnonima = request.getSession(true);
-                List<LineaPedido> carritoSesion =
-                        (List<LineaPedido>) sesionAnonima.getAttribute("carritoAnonimo");
+                List<LineaPedido> carritoSesion
+                        = (List<LineaPedido>) sesionAnonima.getAttribute("carritoAnonimo");
                 if (carritoSesion == null) {
                     carritoSesion = new ArrayList<>();
                 }
@@ -365,7 +384,10 @@ public class AjaxController extends HttpServlet {
             out.print("{\"error\": \"ID de producto inválido\"}");
         } catch (Exception e) {
             if (con != null) {
-                try { con.rollback(); } catch (Exception ex) { }
+                try {
+                    con.rollback();
+                } catch (Exception ex) {
+                }
             }
             e.printStackTrace();
             out.print("{\"error\": \"Error al añadir el producto: " + e.getMessage() + "\"}");

@@ -10,29 +10,29 @@
 <c:set var="contexto" value="${pageContext.request.contextPath}" scope="application"/>
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error 404</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/estilo.css">
-</head>
-<body>
-    
-    <jsp:include page="../INC/header.jsp" />
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Error 404</title>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/estilo.css">
+    </head>
+    <body>
 
-  <!-- ERROR 404 -->
-  <div class="error-icon">
-    <img src="${pageContext.request.contextPath}/IMAGE/error404.png" 
-         alt="Error 404" 
-         style="width: 200px; height: auto;">
-</div>
+        <jsp:include page="../INC/header.jsp" />
 
-      <div class="error-actions">
-        <a href="${pageContext.request.contextPath}/inicio.jsp" class="btn-home">← Ir a la tienda</a>
-        <a href="javascript:history.back()" class="btn-back">Volver atrás</a>
-      </div>
+        <!-- ERROR 404 -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center;">
+            <img src="${pageContext.request.contextPath}/IMAGE/error404.png" 
+                 alt="Error 404" 
+                 style="width: 800px; max-width: 90%; height: auto; margin-bottom: 2rem; margin-top: 2rem">
+        </div>
 
- <jsp:include page="../INC/footer.jsp" />
+        <div class="error-actions" style="margin-bottom: 3rem;">
+            <a href="${pageContext.request.contextPath}/inicio.jsp" class="btn-home">← Ir a la tienda</a>
+            <a href="javascript:history.back()" class="btn-back">Volver atrás</a>
+        </div>
 
-</body>
+        <jsp:include page="../INC/footer.jsp" />
+
+    </body>
 </html>

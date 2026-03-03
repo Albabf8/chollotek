@@ -200,6 +200,11 @@
         <script>
             var contextPath = '${pageContext.request.contextPath}';
 
+            /**
+             * Realiza una petición asíncrona (AJAX) para añadir un producto al carrito de compras.
+             * * @param {number|string} idProducto - El identificador único del producto.
+             * @param {string} nombreProducto - El nombre del producto para mostrar en la notificación.
+             */
             function anadirAlCarritoAjax(idProducto, nombreProducto) {
                 fetch(contextPath + '/AjaxController?accion=anadirAjax&idproducto=' + idProducto, {
                     method: 'POST'
@@ -219,6 +224,11 @@
                         });
             }
 
+            /**
+             * Muestra una notificación temporal (Toast) en la interfaz de usuario.
+             * * @param {string} mensaje - El texto que se mostrará en la notificación.
+             * @param {string} tipo - La clase CSS para el estilo ('success' o 'error').
+             */
             function mostrarToast(mensaje, tipo) {
                 var toast = document.getElementById('toastCarrito');
                 toast.textContent = mensaje;

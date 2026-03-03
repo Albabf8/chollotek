@@ -418,8 +418,12 @@ public class CarritoController extends HttpServlet {
         return "FrontController?accion=verCarrito";
     }
 
-    /**
-     * Recalcula el importe total e IVA de un carrito.
+/**
+     * Recalcula el importe total y el IVA de un pedido basándose en sus líneas.
+     * Actualiza el registro del pedido en la base de datos.
+     * * @param idPedido ID del pedido a recalcular.
+     * @param con Conexión JDBC activa.
+     * @throws Exception Si falla la consulta o actualización.
      */
     private void recalcularImporteCarrito(int idPedido, Connection con) throws Exception {
         MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();

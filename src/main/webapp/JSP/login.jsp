@@ -8,68 +8,68 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar sesión - Chollotek</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/estilo.css">
-</head>
-<body>
-    
-    <jsp:include page="../INC/header.jsp" />
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Iniciar sesión - Chollotek</title>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/estilo.css">
+    </head>
+    <body>
 
-    <div class="container-form">
-        <div class="form-card">
-            <h2>Iniciar sesión</h2>
+        <jsp:include page="../INC/header.jsp" />
 
-            <!-- MENSAJES -->
-            <c:if test="${not empty mensajeError}">
-                <div class="alert alert-error">${mensajeError}</div>
-            </c:if>
+        <div class="container-form">
+            <div class="form-card">
+                <h2>Iniciar sesión</h2>
 
-            <form action="${pageContext.request.contextPath}/LoginController" 
-                  method="post" 
-                  class="form-login">
-                
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" 
-                           id="email" 
-                           name="email" 
-                           value="${emailIntroducido}"
-                           required 
-                           autofocus>
-                </div>
+                <!-- MENSAJES -->
+                <c:if test="${not empty mensajeError}">
+                    <div class="alert alert-error">${mensajeError}</div>
+                </c:if>
 
-                <div class="form-group">
-                    <label for="password">Contraseña:</label>
-                    <input type="password" 
-                           id="password" 
-                           name="password" 
-                           required>
-                </div>
+                <form action="${pageContext.request.contextPath}/LoginController" 
+                      method="post" 
+                      class="form-login">
 
-                <button type="submit" class="btn btn-primary btn-block">
-                    Iniciar sesión
-                </button>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               value="${emailIntroducido}"
+                               required 
+                               autofocus>
+                    </div>
 
-                <p class="text-center">
-                    ¿No tienes cuenta? 
-                    <a href="${pageContext.request.contextPath}/FrontController?accion=verRegistro">
-                        Regístrate aquí
-                    </a>
-                </p>
+                    <div class="form-group">
+                        <label for="password">Contraseña:</label>
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               required>
+                    </div>
 
-                <div style="margin-top: 1rem; text-align: center;">
-                    <a href="${pageContext.request.contextPath}/FrontController?accion=inicio" class="btn btn-secondary btn-sm">
-                        ↩ Volver a la tienda
-                    </a>
-                </div>
-            </form>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Iniciar sesión
+                    </button>
+
+                    <p class="text-center">
+                        ¿No tienes cuenta? 
+                        <a href="${pageContext.request.contextPath}/FrontController?accion=verRegistro">
+                            Regístrate aquí
+                        </a>
+                    </p>
+
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="${pageContext.request.contextPath}/FrontController?accion=inicio" class="btn btn-secondary btn-sm">
+                            ↩ Volver a la tienda
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <jsp:include page="../INC/footer.jsp" />
+        <jsp:include page="../INC/footer.jsp" />
 
-</body>
+    </body>
 </html>

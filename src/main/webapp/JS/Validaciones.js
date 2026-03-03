@@ -2,14 +2,14 @@
 // VALIDACIONES EN TIEMPO REAL PARA FORMULARIO DE REGISTRO
 // ══════════════════════════════════════════════════════════════
 
-document.addEventListener('DOMContentLoaded', function() {
-    
+document.addEventListener('DOMContentLoaded', function () {
+
     // ─────────────────────────────────────────────────────────
-    // Validar email con Ajax (verifica si ya existe en BD)
+    // Validar email (verifica si ya existe en BD)
     // ─────────────────────────────────────────────────────────
     const emailInput = document.getElementById('email');
     if (emailInput) {
-        emailInput.addEventListener('blur', function() {
+        emailInput.addEventListener('blur', function () {
             validarEmailAjax(this.value);
         });
     }
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ─────────────────────────────────────────────────────────
     const password2Input = document.getElementById('password2');
     if (password2Input) {
-        password2Input.addEventListener('blur', function() {
+        password2Input.addEventListener('blur', function () {
             validarPasswordsIguales();
         });
     }
@@ -29,10 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // ─────────────────────────────────────────────────────────
     const nifInput = document.getElementById('nif');
     if (nifInput) {
-        nifInput.addEventListener('input', function() {
+        nifInput.addEventListener('input', function () {
             const valor = this.value.replace(/[^0-9]/g, ''); // Solo números
             this.value = valor;
-            
+
             if (valor.length === 8) {
                 calcularLetraNIFAjax(valor);
             }
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ─────────────────────────────────────────────────────────
     const formRegistro = document.getElementById('formRegistro');
     if (formRegistro) {
-        formRegistro.addEventListener('submit', function(e) {
+        formRegistro.addEventListener('submit', function (e) {
             if (!validarFormulario()) {
                 e.preventDefault();
                 alert('Por favor, corrige los errores en el formulario.');
@@ -60,7 +60,8 @@ document.addEventListener('DOMContentLoaded', function() {
  * @param {string} email - Email a validar
  */
 function validarEmailAjax(email) {
-    if (!email || email.trim() === '') return;
+    if (!email || email.trim() === '')
+        return;
 
     const errorSpan = document.getElementById('emailError');
     errorSpan.textContent = 'Verificando...';
@@ -68,24 +69,24 @@ function validarEmailAjax(email) {
 
     // Petición Ajax al servidor
     fetch('AjaxController?accion=emailExiste&email=' + encodeURIComponent(email))
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                errorSpan.textContent = '⚠ ' + data.error;
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    errorSpan.textContent = '⚠ ' + data.error;
+                    errorSpan.style.color = 'orange';
+                } else if (data.existe) {
+                    errorSpan.textContent = '✗ Este email ya está registrado';
+                    errorSpan.style.color = 'red';
+                } else {
+                    errorSpan.textContent = '✓ Email disponible';
+                    errorSpan.style.color = 'green';
+                }
+            })
+            .catch(error => {
+                console.error('Error en Ajax:', error);
+                errorSpan.textContent = '⚠ Error al verificar email';
                 errorSpan.style.color = 'orange';
-            } else if (data.existe) {
-                errorSpan.textContent = '✗ Este email ya está registrado';
-                errorSpan.style.color = 'red';
-            } else {
-                errorSpan.textContent = '✓ Email disponible';
-                errorSpan.style.color = 'green';
-            }
-        })
-        .catch(error => {
-            console.error('Error en Ajax:', error);
-            errorSpan.textContent = '⚠ Error al verificar email';
-            errorSpan.style.color = 'orange';
-        });
+            });
 }
 
 /**
@@ -132,24 +133,24 @@ function calcularLetraNIFAjax(numeros) {
 
     // Petición Ajax al servidor
     fetch('AjaxController?accion=calcularNIF&numeros=' + numeros)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                letraNIF.textContent = '⚠ ' + data.error;
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    letraNIF.textContent = '⚠ ' + data.error;
+                    letraNIF.style.color = 'orange';
+                } else {
+                    letraNIF.textContent = '✓ Letra: ' + data.letra;
+                    letraNIF.style.color = 'green';
+
+                    // Actualizar el valor del input con el NIF completo
+                    document.getElementById('nif').value = data.nifCompleto;
+                }
+            })
+            .catch(error => {
+                console.error('Error en Ajax:', error);
+                letraNIF.textContent = '⚠ Error al calcular letra';
                 letraNIF.style.color = 'orange';
-            } else {
-                letraNIF.textContent = '✓ Letra: ' + data.letra;
-                letraNIF.style.color = 'green';
-                
-                // Actualizar el valor del input con el NIF completo
-                document.getElementById('nif').value = data.nifCompleto;
-            }
-        })
-        .catch(error => {
-            console.error('Error en Ajax:', error);
-            letraNIF.textContent = '⚠ Error al calcular letra';
-            letraNIF.style.color = 'orange';
-        });
+            });
 }
 
 /**
@@ -204,20 +205,20 @@ function sumarCantidadAjax(idLinea, cantidadActual) {
     const url = `AjaxController?accion=sumarCantidad&idlinea=${idLinea}&cantidadActual=${cantidadActual}`;
 
     fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.exito) {
-                // Actualizar la cantidad en la página sin recargar
-                actualizarCantidadEnPagina(idLinea, data.nuevaCantidad);
-                mostrarMensaje('Cantidad actualizada', 'success');
-            } else if (data.error) {
-                mostrarMensaje('Error: ' + data.error, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error Ajax:', error);
-            mostrarMensaje('Error de conexión', 'error');
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.exito) {
+                    // Actualizar la cantidad en la página sin recargar
+                    actualizarCantidadEnPagina(idLinea, data.nuevaCantidad);
+                    mostrarMensaje('Cantidad actualizada', 'success');
+                } else if (data.error) {
+                    mostrarMensaje('Error: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error Ajax:', error);
+                mostrarMensaje('Error de conexión', 'error');
+            });
 }
 
 /**
@@ -231,26 +232,26 @@ function restarCantidadAjax(idLinea, cantidadActual) {
     const url = `AjaxController?accion=restarCantidad&idlinea=${idLinea}&cantidadActual=${cantidadActual}`;
 
     fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.exito) {
-                if (data.eliminado) {
-                    // Eliminar la fila de la tabla
-                    eliminarFilaCarrito(idLinea);
-                    mostrarMensaje('Producto eliminado del carrito', 'info');
-                } else {
-                    // Actualizar la cantidad en la página
-                    actualizarCantidadEnPagina(idLinea, data.nuevaCantidad);
-                    mostrarMensaje('Cantidad actualizada', 'success');
+            .then(response => response.json())
+            .then(data => {
+                if (data.exito) {
+                    if (data.eliminado) {
+                        // Eliminar la fila de la tabla
+                        eliminarFilaCarrito(idLinea);
+                        mostrarMensaje('Producto eliminado del carrito', 'info');
+                    } else {
+                        // Actualizar la cantidad en la página
+                        actualizarCantidadEnPagina(idLinea, data.nuevaCantidad);
+                        mostrarMensaje('Cantidad actualizada', 'success');
+                    }
+                } else if (data.error) {
+                    mostrarMensaje('Error: ' + data.error, 'error');
                 }
-            } else if (data.error) {
-                mostrarMensaje('Error: ' + data.error, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error Ajax:', error);
-            mostrarMensaje('Error de conexión', 'error');
-        });
+            })
+            .catch(error => {
+                console.error('Error Ajax:', error);
+                mostrarMensaje('Error de conexión', 'error');
+            });
 }
 
 /**

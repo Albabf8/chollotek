@@ -16,17 +16,26 @@ import java.util.logging.Logger;
  *
  * @author Alba
  */
-public class UsuarioDAOImpl implements UsuarioDAO{
+public class UsuarioDAOImpl implements UsuarioDAO {
 
     private static final Logger logger = Logger.getLogger(UsuarioDAOImpl.class.getName());
 
+    /**
+     * Recupera un usuario basándose en su dirección de correo electrónico.
+     * Método clave para procesos de Login.
+     *
+     * * @param email El correo electrónico del usuario.
+     * @param con Conexión activa a la base de datos.
+     * @return Objeto {@link Usuario} encontrado o {@code null} si no existe.
+     * @throws Exception Si ocurre un error en la consulta SQL.
+     */
     @Override
     public Usuario buscarPorEmail(String email, Connection con) throws Exception {
         String sql = "SELECT * FROM usuarios WHERE email = ?";
-        
+
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, email);
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     logger.log(Level.INFO, "Usuario encontrado: {0}", email);
@@ -34,18 +43,26 @@ public class UsuarioDAOImpl implements UsuarioDAO{
                 }
             }
         }
-        
+
         logger.log(Level.INFO, "Usuario no encontrado: {0}", email);
         return null;
     }
 
+    /**
+     * Busca un usuario por su clave primaria (ID).
+     *
+     * * @param id Identificador único del usuario.
+     * @param con Conexión activa a la base de datos.
+     * @return El objeto {@link Usuario} poblado o {@code null} si no existe.
+     * @throws Exception Si falla la comunicación con la BD.
+     */
     @Override
     public Usuario buscarPorId(int id, Connection con) throws Exception {
         String sql = "SELECT * FROM usuarios WHERE idusuario = ?";
-        
+
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     logger.log(Level.INFO, "Usuario encontrado por ID: {0}", id);
@@ -53,18 +70,28 @@ public class UsuarioDAOImpl implements UsuarioDAO{
                 }
             }
         }
-        
+
         logger.log(Level.WARNING, "Usuario no encontrado con ID: {0}", id);
         return null;
     }
 
+    /**
+     * Verifica si un correo electrónico ya está registrado en la base de datos.
+     * Útil para validaciones previas al registro de nuevos usuarios.
+     *
+     * * @param email Email a comprobar.
+     * @param con Conexión activa a la base de datos.
+     * @return {@code true} si el email ya existe, {@code false} en caso
+     * contrario.
+     * @throws Exception Si ocurre un error SQL.
+     */
     @Override
     public boolean emailExiste(String email, Connection con) throws Exception {
         String sql = "SELECT COUNT(*) AS total FROM usuarios WHERE email = ?";
-        
+
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, email);
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     boolean existe = rs.getInt("total") > 0;
@@ -73,17 +100,27 @@ public class UsuarioDAOImpl implements UsuarioDAO{
                 }
             }
         }
-        
+
         return false;
     }
 
+    /**
+     * Registra un nuevo usuario en el sistema. Recupera automáticamente el ID
+     * generado y lo asigna al objeto usuario proporcionado.
+     *
+     * * @param usuario Objeto {@link Usuario} con los datos de registro.
+     * @param con Conexión activa a la base de datos.
+     * @throws Exception Si el email ya está registrado
+     * (SQLIntegrityConstraintViolationException) o si ocurre un error en la
+     * inserción.
+     */
     @Override
     public void insertar(Usuario usuario, Connection con) throws Exception {
-        String sql = "INSERT INTO usuarios " +
-                     "(email, password, nombre, apellidos, nif, telefono, " +
-                     "direccion, codigo_postal, localidad, provincia, avatar) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
+        String sql = "INSERT INTO usuarios "
+                + "(email, password, nombre, apellidos, nif, telefono, "
+                + "direccion, codigo_postal, localidad, provincia, avatar) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, usuario.getEmail());
             ps.setString(2, usuario.getPassword());
@@ -96,39 +133,47 @@ public class UsuarioDAOImpl implements UsuarioDAO{
             ps.setString(9, usuario.getLocalidad());
             ps.setString(10, usuario.getProvincia());
             ps.setString(11, usuario.getAvatar());
-            
+
             int filasAfectadas = ps.executeUpdate();
-            
+
             if (filasAfectadas == 0) {
                 throw new SQLException("Error al insertar usuario, no se afectó ninguna fila.");
             }
-            
+
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     usuario.setIdusuario(keys.getInt(1));
                     logger.log(Level.INFO, "Usuario insertado correctamente: {0} (ID: {1})", new Object[]{usuario.getEmail(), usuario.getIdusuario()});
                 }
             }
-            
+
         } catch (SQLIntegrityConstraintViolationException e) {
             logger.log(Level.SEVERE, "Email duplicado al intentar insertar: {0}", usuario.getEmail());
             throw new Exception("El email ya está registrado en el sistema.");
         }
     }
 
+    /**
+     * Actualiza la información personal del usuario (excepto credenciales).
+     *
+     * * @param usuario Objeto {@link Usuario} con los datos actualizados.
+     * @param con Conexión activa a la base de datos.
+     * @throws SQLException Si el ID de usuario no existe o falla la
+     * actualización.
+     */
     @Override
     public void actualizar(Usuario usuario, Connection con) throws Exception {
-        String sql = "UPDATE usuarios SET " +
-                     "nombre = ?, " +
-                     "apellidos = ?, " +
-                     "telefono = ?, " +
-                     "direccion = ?, " +
-                     "codigo_postal = ?, " +
-                     "localidad = ?, " +
-                     "provincia = ?, " +
-                     "avatar = ? " +
-                     "WHERE idusuario = ?";
-        
+        String sql = "UPDATE usuarios SET "
+                + "nombre = ?, "
+                + "apellidos = ?, "
+                + "telefono = ?, "
+                + "direccion = ?, "
+                + "codigo_postal = ?, "
+                + "localidad = ?, "
+                + "provincia = ?, "
+                + "avatar = ? "
+                + "WHERE idusuario = ?";
+
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, usuario.getNombre());
             ps.setString(2, usuario.getApellidos());
@@ -139,46 +184,63 @@ public class UsuarioDAOImpl implements UsuarioDAO{
             ps.setString(7, usuario.getProvincia());
             ps.setString(8, usuario.getAvatar());
             ps.setInt(9, usuario.getIdusuario());
-            
+
             int filasAfectadas = ps.executeUpdate();
-            
+
             if (filasAfectadas == 0) {
                 logger.log(Level.WARNING, "No se encontr\u00f3 usuario con ID: {0}", usuario.getIdusuario());
                 throw new SQLException("No se pudo actualizar: usuario no encontrado.");
             }
-            
+
             logger.log(Level.INFO, "Usuario actualizado: {0} - {1} {2}", new Object[]{usuario.getIdusuario(), usuario.getNombre(), usuario.getApellidos()});
         }
     }
 
+    /**
+     * Actualiza la contraseña de un usuario de forma independiente.
+     *
+     * * @param id ID del usuario.
+     * @param passwordNueva Nueva contraseña (se recomienda que llegue ya
+     * cifrada).
+     * @param con Conexión activa a la base de datos.
+     * @throws SQLException Si falla la actualización.
+     */
     @Override
     public void actualizarPassword(int id, String passwordNueva, Connection con) throws Exception {
         String sql = "UPDATE usuarios SET password = ? WHERE idusuario = ?";
-        
+
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, passwordNueva);
             ps.setInt(2, id);
-            
+
             int filasAfectadas = ps.executeUpdate();
-            
+
             if (filasAfectadas == 0) {
                 logger.log(Level.WARNING, "No se encontr\u00f3 usuario con ID: {0}", id);
                 throw new SQLException("No se pudo actualizar password: usuario no encontrado.");
             }
-            
+
             logger.log(Level.INFO, "Contrase\u00f1a actualizada para usuario ID: {0}", id);
         }
     }
 
+    /**
+     * Actualiza la fecha y hora del último acceso del usuario al sistema.
+     * Utiliza la función {@code NOW()} de SQL.
+     *
+     * * @param id ID del usuario que acaba de iniciar sesión.
+     * @param con Conexión activa a la base de datos.
+     * @throws Exception Si falla la ejecución.
+     */
     @Override
     public void actualizarUltimoAcceso(int id, Connection con) throws Exception {
         String sql = "UPDATE usuarios SET ultimo_acceso = NOW() WHERE idusuario = ?";
-        
+
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
-            
+
             int filasAfectadas = ps.executeUpdate();
-            
+
             if (filasAfectadas == 0) {
                 logger.log(Level.WARNING, "No se pudo actualizar \u00faltimo acceso para usuario ID: {0}", id);
             } else {
@@ -187,27 +249,41 @@ public class UsuarioDAOImpl implements UsuarioDAO{
         }
     }
 
+    /**
+     * Lista todos los usuarios registrados, ordenados alfabéticamente por
+     * apellidos y nombre.
+     *
+     * * @param con Conexión activa a la base de datos.
+     * @return Lista de objetos {@link Usuario}.
+     * @throws Exception Si ocurre un error en la consulta.
+     */
     @Override
     public List<Usuario> listarTodos(Connection con) throws Exception {
         List<Usuario> lista = new ArrayList<>();
         String sql = "SELECT * FROM usuarios ORDER BY apellidos, nombre";
-        
-        try (Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            
+
+        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+
             while (rs.next()) {
                 lista.add(mapear(rs));
             }
-            
+
             logger.log(Level.INFO, "Usuarios listados: {0}", lista.size());
         }
-        
+
         return lista;
     }
 
+    /**
+     * Transforma una fila del ResultSet en un objeto de tipo Usuario.
+     *
+     * * @param rs El ResultSet posicionado en la fila actual.
+     * @return Objeto {@link Usuario} mapeado.
+     * @throws SQLException Si ocurre un error al leer las columnas.
+     */
     private Usuario mapear(ResultSet rs) throws SQLException {
         Usuario usuario = new Usuario();
-        
+
         usuario.setIdusuario(rs.getInt("idusuario"));
         usuario.setEmail(rs.getString("email"));
         usuario.setPassword(rs.getString("password"));
@@ -221,8 +297,8 @@ public class UsuarioDAOImpl implements UsuarioDAO{
         usuario.setProvincia(rs.getString("provincia"));
         usuario.setUltimoAcceso(rs.getTimestamp("ultimo_acceso"));
         usuario.setAvatar(rs.getString("avatar"));
-        
+
         return usuario;
     }
-    
+
 }

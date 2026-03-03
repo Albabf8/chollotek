@@ -14,11 +14,11 @@ import javax.sql.DataSource;
  * @author Alba
  */
 public class ConnectionFactory {
-    
-        private static final Logger logger = Logger.getLogger(ConnectionFactory.class.getName());
+
+    private static final Logger logger = Logger.getLogger(ConnectionFactory.class.getName());
     private static DataSource dataSource = null;
     private static final String DATASOURCE_NAME = "java:comp/env/jdbc/chollotek";
-    
+
     // Bloque estático: se ejecuta UNA VEZ al cargar la clase
     static {
         try {
@@ -31,13 +31,13 @@ public class ConnectionFactory {
             throw new ExceptionInInitializerError(ex);
         }
     }
-    
+
     /**
      * Obtiene una conexión del pool de Tomcat.
-     * 
-     * IMPORTANTE: Debes cerrar la conexión con closeConnection(con) cuando termines,
-     * esto la devuelve al pool (no la destruye).
-     * 
+     *
+     * IMPORTANTE: Debes cerrar la conexión con closeConnection(con) cuando
+     * termines, esto la devuelve al pool (no la destruye).
+     *
      * @return Connection del pool
      * @throws SQLException si no hay conexiones disponibles o hay error
      */
@@ -45,15 +45,15 @@ public class ConnectionFactory {
         if (dataSource == null) {
             throw new SQLException("DataSource no inicializado. Verifica context.xml");
         }
-        
+
         Connection con = dataSource.getConnection();
         logger.fine("Conexión obtenida del pool");
         return con;
     }
-    
+
     /**
      * Cierra una conexión de forma segura (la devuelve al pool).
-     * 
+     *
      * @param con conexión a cerrar (puede ser null)
      */
     public static void closeConnection(Connection con) {
@@ -68,11 +68,10 @@ public class ConnectionFactory {
             }
         }
     }
-    
+
     /**
-     * Cierra una conexión sin lanzar excepciones.
-     * Útil para bloques finally.
-     * 
+     * Cierra una conexión sin lanzar excepciones. Útil para bloques finally.
+     *
      * @param con conexión a cerrar
      */
     public static void closeQuietly(Connection con) {
@@ -84,5 +83,5 @@ public class ConnectionFactory {
             // Ignorar silenciosamente
         }
     }
- 
+
 }
