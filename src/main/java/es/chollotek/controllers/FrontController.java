@@ -28,6 +28,7 @@ public class FrontController extends HttpServlet {
 
     /**
      * Gestiona las peticiones GET redirigiéndolas al método doPost.
+     *
      * * @param request La petición HTTP.
      * @param response La respuesta HTTP.
      * @throws ServletException Si ocurre un error específico del servlet.
@@ -40,12 +41,14 @@ public class FrontController extends HttpServlet {
     }
 
     /**
-     * Método principal que procesa todas las peticiones POST y GET.
-     * Analiza el parámetro 'accion' para determinar el flujo de navegación
-     * y despacha la petición al recurso o controlador correspondiente.
+     * Método principal que procesa todas las peticiones POST y GET. Analiza el
+     * parámetro 'accion' para determinar el flujo de navegación y despacha la
+     * petición al recurso o controlador correspondiente.
+     *
      * * @param request La petición HTTP.
      * @param response La respuesta HTTP.
-     * @throws ServletException Si ocurre un error en el despacho de la petición.
+     * @throws ServletException Si ocurre un error en el despacho de la
+     * petición.
      * @throws IOException Si ocurre un error de entrada/salida.
      */
     @Override
@@ -104,12 +107,12 @@ public class FrontController extends HttpServlet {
                     break;
 
                 case "verPedidos":
-                     url = accionVerPedidos(request);
+                    url = accionVerPedidos(request);
                     break;
 
                 case "logout":
                     request.getSession().invalidate();
-                    url = "inicio.jsp";
+                    url = accionInicio(request);
                     break;
 
                 case "verDetalle":
@@ -128,9 +131,11 @@ public class FrontController extends HttpServlet {
     }
 
     /**
-     * Prepara los datos para la página de inicio.
-     * Obtiene una selección aleatoria de productos para mostrar como destacados.
-     * * @param request La petición HTTP donde se guardará la lista de productos.
+     * Prepara los datos para la página de inicio. Obtiene una selección
+     * aleatoria de productos para mostrar como destacados.
+     *
+     * * @param request La petición HTTP donde se guardará la lista de
+     * productos.
      * @return La URL de la página de inicio ("inicio.jsp").
      */
     private String accionInicio(HttpServletRequest request) {
@@ -151,8 +156,9 @@ public class FrontController extends HttpServlet {
     }
 
     /**
-     * Gestiona el filtrado avanzado de productos.
-     * Permite filtrar por categoría, marca, nombre y rango de precios.
+     * Gestiona el filtrado avanzado de productos. Permite filtrar por
+     * categoría, marca, nombre y rango de precios.
+     *
      * * @param request La petición HTTP con los parámetros de filtrado.
      * @return La URL de la página de resultados ("JSP/resultados.jsp").
      */
@@ -169,17 +175,26 @@ public class FrontController extends HttpServlet {
 
             Integer idCategoria = null;
             if (idCatStr != null && !idCatStr.trim().isEmpty() && !idCatStr.equals("0")) {
-                try { idCategoria = Integer.parseInt(idCatStr); } catch (NumberFormatException e) { }
+                try {
+                    idCategoria = Integer.parseInt(idCatStr);
+                } catch (NumberFormatException e) {
+                }
             }
 
             BigDecimal precioMin = null;
             if (precioMinStr != null && !precioMinStr.trim().isEmpty()) {
-                try { precioMin = new BigDecimal(precioMinStr); } catch (NumberFormatException e) { }
+                try {
+                    precioMin = new BigDecimal(precioMinStr);
+                } catch (NumberFormatException e) {
+                }
             }
 
             BigDecimal precioMax = null;
             if (precioMaxStr != null && !precioMaxStr.trim().isEmpty()) {
-                try { precioMax = new BigDecimal(precioMaxStr); } catch (NumberFormatException e) { }
+                try {
+                    precioMax = new BigDecimal(precioMaxStr);
+                } catch (NumberFormatException e) {
+                }
             }
 
             MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
@@ -214,6 +229,7 @@ public class FrontController extends HttpServlet {
 
     /**
      * Procesa la búsqueda rápida de productos por texto.
+     *
      * * @param request La petición HTTP con el parámetro 'textoBusqueda'.
      * @return La URL de la página de resultados ("JSP/resultados.jsp").
      */
@@ -250,10 +266,13 @@ public class FrontController extends HttpServlet {
         return "JSP/resultados.jsp";
     }
 
-/**
-     * Recupera y muestra el contenido del carrito del usuario.
-     * Para usuarios registrados, carga las líneas y los detalles completos de cada producto desde la BD.
-     * * @param request La petición HTTP para acceder a la sesión y atributos de vista.
+    /**
+     * Recupera y muestra el contenido del carrito del usuario. Para usuarios
+     * registrados, carga las líneas y los detalles completos de cada producto
+     * desde la BD.
+     *
+     * * @param request La petición HTTP para acceder a la sesión y atributos
+     * de vista.
      * @return La URL de la vista del carrito ("JSP/carrito.jsp").
      */
     private String accionVerCarrito(HttpServletRequest request) {
@@ -313,8 +332,10 @@ public class FrontController extends HttpServlet {
 
     /**
      * Verifica la autenticación antes de permitir la tramitación de un pedido.
+     *
      * * @param request La petición HTTP para validar la sesión del usuario.
-     * @return El controlador de pedidos o la página de login si no está autenticado.
+     * @return El controlador de pedidos o la página de login si no está
+     * autenticado.
      */
     private String accionTramitarPedido(HttpServletRequest request) {
         HttpSession sesion = request.getSession(false);
@@ -329,8 +350,9 @@ public class FrontController extends HttpServlet {
     }
 
     /**
-     * Prepara la ficha detallada de un producto.
-     * Carga los datos del producto, su categoría y una lista de productos relacionados.
+     * Prepara la ficha detallada de un producto. Carga los datos del producto,
+     * su categoría y una lista de productos relacionados.
+     *
      * * @param request La petición HTTP con el parámetro 'idproducto'.
      * @return La URL de la página de detalle ("JSP/detalleProducto.jsp").
      */
@@ -390,37 +412,39 @@ public class FrontController extends HttpServlet {
 
         return "JSP/detalleProducto.jsp";
     }
-    
+
     /**
      * Recupera el historial de pedidos finalizados del usuario actual.
-     * * @param request La petición HTTP para obtener el ID del usuario logueado.
+     *
+     * * @param request La petición HTTP para obtener el ID del usuario
+     * logueado.
      * @return La URL de la vista de pedidos ("JSP/pedidos.jsp").
      */
     private String accionVerPedidos(HttpServletRequest request) {
-    Connection con = null;
-    try {
-        HttpSession sesion = request.getSession(false);
-        Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
+        Connection con = null;
+        try {
+            HttpSession sesion = request.getSession(false);
+            Usuario usuario = (sesion != null) ? (Usuario) sesion.getAttribute("usuario") : null;
 
-        if (usuario == null) {
-            return "JSP/login.jsp";
+            if (usuario == null) {
+                return "JSP/login.jsp";
+            }
+
+            con = ConnectionFactory.getConnection();
+            MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
+            PedidoDAO pedidoDAO = factory.getPedidoDAO();
+
+            List<Pedido> pedidos = pedidoDAO.listarPedidosFinalizados(usuario.getIdusuario(), con);
+            request.setAttribute("pedidos", pedidos);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensajeError", "Error al cargar los pedidos: " + e.getMessage());
+        } finally {
+            ConnectionFactory.closeConnection(con);
         }
-
-        con = ConnectionFactory.getConnection();
-        MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
-        PedidoDAO pedidoDAO = factory.getPedidoDAO();
-
-        List<Pedido> pedidos = pedidoDAO.listarPedidosFinalizados(usuario.getIdusuario(), con);
-        request.setAttribute("pedidos", pedidos);
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        request.setAttribute("mensajeError", "Error al cargar los pedidos: " + e.getMessage());
-    } finally {
-        ConnectionFactory.closeConnection(con);
+        return "JSP/pedidos.jsp";
     }
-    return "JSP/pedidos.jsp";
-}
 
     @Override
     public String getServletInfo() {
