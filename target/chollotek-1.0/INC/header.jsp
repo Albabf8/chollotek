@@ -90,7 +90,7 @@
     <!-- MODAL CONFIRMACIÓN LOGOUT -->
     <div id="modalLogout" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
          background: rgba(7, 5, 15, 0.85); z-index:9999; align-items:center; justify-content:center;">
-        <div style="background:#fff; border-radius:10px; padding:30px; max-width:380px; width:90%;
+        <div style="background:#fff; color: #07050f; border-radius:10px; padding:30px; max-width:380px; width:90%;
              text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.3);">
             <p style="font-size:1.1rem; margin-bottom:20px;">¿Seguro que quieres cerrar sesión?</p>
             <div style="display:flex; gap:12px; justify-content:center;">

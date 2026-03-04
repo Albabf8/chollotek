@@ -13,7 +13,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Registro - Chollotek</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/CSS/estilo.css">
-        <script src="${pageContext.request.contextPath}/JS/validaciones.js" defer></script>
+        <script src="${pageContext.request.contextPath}/JS/Validaciones.js" defer></script>
     </head>
     <body>
 
@@ -96,10 +96,10 @@
                                    id="nif" 
                                    name="nif" 
                                    required
-                                   maxlength="8"
-                                   pattern="[0-9]{8}"
+                                   maxlength="9"
+                                   pattern="[0-9]{8}[A-Za-z]"
                                    placeholder="12345678">
-                            <span id="nifLetra"></span>
+                            <span id="nifLetra" style="font-weight: bold; margin-left: 8px;"></span>
                         </div>
 
                         <div class="form-group">

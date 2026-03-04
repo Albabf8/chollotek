@@ -159,100 +159,103 @@
         <div id="toastCarrito"></div>
 
         <script>
-        var contextPath = '${pageContext.request.contextPath}';
+            var contextPath = '${pageContext.request.contextPath}';
 
-        // ═════════════════════════════════════════════════
-        // CONTROLES DE CANTIDAD
-        // ═════════════════════════════════════════════════
+            // ═════════════════════════════════════════════════
+            // CONTROLES DE CANTIDAD
+            // ═════════════════════════════════════════════════
 
-        function incrementarCantidad() {
-            const input = document.getElementById('cantidad');
-            const valor = parseInt(input.value);
-            if (valor < 99) {
-                input.value = valor + 1;
+            function incrementarCantidad() {
+                const input = document.getElementById('cantidad');
+                const valor = parseInt(input.value);
+                if (valor < 99) {
+                    input.value = valor + 1;
+                }
             }
-        }
 
-        function decrementarCantidad() {
-            const input = document.getElementById('cantidad');
-            const valor = parseInt(input.value);
-            if (valor > 1) {
-                input.value = valor - 1;
+            function decrementarCantidad() {
+                const input = document.getElementById('cantidad');
+                const valor = parseInt(input.value);
+                if (valor > 1) {
+                    input.value = valor - 1;
+                }
             }
-        }
 
-        // ═════════════════════════════════════════════════
-        // AÑADIR AL CARRITO CON CANTIDAD (desde detalle)
-        // ═════════════════════════════════════════════════
+            // ═════════════════════════════════════════════════
+            // AÑADIR AL CARRITO CON CANTIDAD (desde detalle)
+            // ═════════════════════════════════════════════════
 
-        function anadirAlCarritoConCantidad(idProducto, nombreProducto) {
-            var cantidad = parseInt(document.getElementById('cantidad').value) || 1;
+            function anadirAlCarritoConCantidad(idProducto, nombreProducto) {
+                var cantidad = parseInt(document.getElementById('cantidad').value) || 1;
 
-            // ✅ FIX: Una sola petición enviando la cantidad como parámetro.
-            // Antes se hacían N peticiones en paralelo (una por unidad),
-            // lo que provocaba condiciones de carrera en sesión y perdía unidades.
-            fetch(contextPath + '/AjaxController?accion=anadirAjax&idproducto=' + idProducto + '&cantidad=' + cantidad, {
-                method: 'POST'
-            })
-                    .then(function (r) {
-                        return r.json();
-                    })
-                    .then(function (data) {
-                        if (data.exito) {
-                            if (cantidad === 1) {
+                // Validación
+                if (isNaN(cantidad) || cantidad < 1) {
+                    document.getElementById('cantidad').value = 1;
+                    cantidad = 1;
+                }
+
+                fetch(contextPath + '/AjaxController?accion=anadirAjax&idproducto=' + idProducto + '&cantidad=' + cantidad, {
+                    method: 'POST'
+                })
+                        .then(function (r) {
+                            return r.json();
+                        })
+                        .then(function (data) {
+                            if (data.exito) {
+                                if (cantidad === 1) {
+                                    mostrarToast('✓ "' + nombreProducto + '" añadido al carrito', 'success');
+                                } else {
+                                    mostrarToast('✓ ' + cantidad + ' unidades de "' + nombreProducto + '" añadidas', 'success');
+                                }
+                            } else {
+                                mostrarToast('✗ ' + (data.error || 'Error al añadir'), 'error');
+                            }
+                        })
+                        .catch(function () {
+                            mostrarToast('✗ Error de conexión', 'error');
+                        });
+            }
+
+            // ═════════════════════════════════════════════════
+            // AÑADIR AL CARRITO SIMPLE (desde relacionados)
+            // ═════════════════════════════════════════════════
+
+            function anadirAlCarritoAjax(idProducto, nombreProducto) {
+                fetch(contextPath + '/AjaxController?accion=anadirAjax&idproducto=' + idProducto, {
+                    method: 'POST'
+                })
+                        .then(function (r) {
+                            return r.json();
+                        })
+                        .then(function (data) {
+                            if (data.exito) {
                                 mostrarToast('✓ "' + nombreProducto + '" añadido al carrito', 'success');
                             } else {
-                                mostrarToast('✓ ' + cantidad + ' unidades de "' + nombreProducto + '" añadidas', 'success');
+                                mostrarToast('✗ ' + (data.error || 'Error al añadir'), 'error');
                             }
-                        } else {
-                            mostrarToast('✗ ' + (data.error || 'Error al añadir'), 'error');
-                        }
-                    })
-                    .catch(function () {
-                        mostrarToast('✗ Error de conexión', 'error');
-                    });
-        }
+                        })
+                        .catch(function () {
+                            mostrarToast('✗ Error de conexión', 'error');
+                        });
+            }
 
-        // ═════════════════════════════════════════════════
-        // AÑADIR AL CARRITO SIMPLE (desde relacionados)
-        // ═════════════════════════════════════════════════
+            // ═════════════════════════════════════════════════
+            // MOSTRAR TOAST (mensaje flotante)
+            // ═════════════════════════════════════════════════
 
-        function anadirAlCarritoAjax(idProducto, nombreProducto) {
-            fetch(contextPath + '/AjaxController?accion=anadirAjax&idproducto=' + idProducto, {
-                method: 'POST'
-            })
-                    .then(function (r) {
-                        return r.json();
-                    })
-                    .then(function (data) {
-                        if (data.exito) {
-                            mostrarToast('✓ "' + nombreProducto + '" añadido al carrito', 'success');
-                        } else {
-                            mostrarToast('✗ ' + (data.error || 'Error al añadir'), 'error');
-                        }
-                    })
-                    .catch(function () {
-                        mostrarToast('✗ Error de conexión', 'error');
-                    });
-        }
+            function mostrarToast(mensaje, tipo) {
+                var toast = document.getElementById('toastCarrito');
+                toast.textContent = mensaje;
+                toast.className = 'visible ' + tipo;
 
-        // ═════════════════════════════════════════════════
-        // MOSTRAR TOAST (mensaje flotante)
-        // ═════════════════════════════════════════════════
+                // Limpiar el timer anterior si existe
+                clearTimeout(toast._timer);
 
-        function mostrarToast(mensaje, tipo) {
-            var toast = document.getElementById('toastCarrito');
-            toast.textContent = mensaje;
-            toast.className = 'visible ' + tipo;
-
-            // Limpiar el timer anterior si existe
-            clearTimeout(toast._timer);
-
-            // Ocultar después de 3 segundos
-            toast._timer = setTimeout(function () {
-                toast.className = '';
-            }, 3000);
-        }
+                // Ocultar después de 3 segundos
+                toast._timer = setTimeout(function () {
+                    toast.className = '';
+                }, 3000);
+            }
         </script>
 
     </body>

@@ -264,7 +264,7 @@ public class AjaxController extends HttpServlet {
     }
 
     // ═══════════════════════════════════════════════════
-    // AÑADIR PRODUCTO AL CARRITO (AJAX)  ← MÉTODO CORREGIDO
+    // AÑADIR PRODUCTO AL CARRITO (AJAX) 
     // ═══════════════════════════════════════════════════
     private void anadirProductoAjax(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
@@ -281,7 +281,7 @@ public class AjaxController extends HttpServlet {
             }
             int idProducto = Integer.parseInt(idProductoStr);
 
-            // ── FIX: Leer cantidad (por defecto 1 si no se envía o es inválida) ──
+            // ── Leer cantidad (por defecto 1 si no se envía o es inválida) ──
             int cantidad = 1;
             String cantidadStr = request.getParameter("cantidad");
             if (cantidadStr != null && !cantidadStr.trim().isEmpty()) {
@@ -290,8 +290,8 @@ public class AjaxController extends HttpServlet {
                     if (cantidad < 1) {
                         cantidad = 1;
                     }
-                    if (cantidad > 99) {
-                        cantidad = 99;
+                    if (cantidad > 1500) {
+                        cantidad = 1500;
                     }
                 } catch (NumberFormatException e) {
                     cantidad = 1;
@@ -326,7 +326,7 @@ public class AjaxController extends HttpServlet {
                 LineaPedido lineaExistente = lineaDAO.buscarLinea(carrito.getIdpedido(), idProducto, con);
 
                 if (lineaExistente != null) {
-                    // FIX: sumar la cantidad recibida, no siempre +1
+                    // sumar la cantidad recibida, no siempre +1
                     lineaDAO.actualizarCantidad(
                             lineaExistente.getIdlinea(),
                             lineaExistente.getCantidad() + cantidad,
@@ -335,7 +335,7 @@ public class AjaxController extends HttpServlet {
                     LineaPedido nuevaLinea = new LineaPedido();
                     nuevaLinea.setIdpedido(carrito.getIdpedido());
                     nuevaLinea.setIdproducto(idProducto);
-                    // FIX: insertar directamente con la cantidad solicitada
+                    // insertar directamente con la cantidad solicitada
                     nuevaLinea.setCantidad(cantidad);
                     lineaDAO.insertar(nuevaLinea, con);
                 }
@@ -354,7 +354,7 @@ public class AjaxController extends HttpServlet {
                 boolean encontrado = false;
                 for (LineaPedido l : carritoSesion) {
                     if (l.getIdproducto() == idProducto) {
-                        // FIX: sumar la cantidad recibida, no siempre +1
+                        // sumar la cantidad recibida, no siempre +1
                         l.setCantidad(l.getCantidad() + cantidad);
                         encontrado = true;
                         break;
@@ -369,7 +369,7 @@ public class AjaxController extends HttpServlet {
 
                     LineaPedido nueva = new LineaPedido();
                     nueva.setIdproducto(idProducto);
-                    // FIX: insertar directamente con la cantidad solicitada
+                    // insertar directamente con la cantidad solicitada
                     nueva.setCantidad(cantidad);
                     nueva.setProducto(producto);
                     carritoSesion.add(nueva);

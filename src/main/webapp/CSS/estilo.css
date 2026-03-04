@@ -667,6 +667,16 @@ min-width: var(--sidebar-w);
     background: linear-gradient(135deg, rgba(224,64,251,.06), rgba(0,229,255,.04));
     opacity: 0;
     transition: opacity .25s;
+    pointer-events: none;
+    
+}
+
+.producto-card a,
+.product-card a {
+    display: block;
+    width: 100%;
+    position: relative;
+    z-index: 2;
 }
 
 .producto-card:hover,

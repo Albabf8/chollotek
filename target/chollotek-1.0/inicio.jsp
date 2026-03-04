@@ -257,7 +257,7 @@
                 background: #c62828;
             }
 
-            /* ── FIX: formulario de tarjeta sin estilos de form ── */
+            /* ── formulario de tarjeta sin estilos de form ── */
             .form-detalle-producto {
                 display: contents; /* el form no ocupa espacio visual */
             }
@@ -353,7 +353,6 @@
                         <c:forEach items="${productos}" var="prod">
                             <article class="producto-card">
 
-                                <%-- ✅ FIX: formulario POST en lugar de <a href con parámetros> --%>
                                 <form method="post"
                                       action="${pageContext.request.contextPath}/FrontController"
                                       class="form-detalle-producto">

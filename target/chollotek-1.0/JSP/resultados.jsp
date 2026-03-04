@@ -45,6 +45,16 @@
             #toastCarrito.error    {
                 background: #c62828;
             }
+
+            .form-detalle-producto {
+                display: contents;
+            }
+            .producto-card-btn {
+                all: unset;
+                cursor: pointer;
+                display: block;
+                width: 100%;
+            }
         </style>
     </head>
     <body>
@@ -162,27 +172,41 @@
                         <div class="productos-container">
                             <c:forEach items="${productos}" var="prod">
                                 <article class="producto-card">
-                                    <a href="${pageContext.request.contextPath}/FrontController?accion=verDetalle&idproducto=${prod.idproducto}">
-                                        <img src="${pageContext.request.contextPath}/imagenes/imagen/productos/${prod.imagen}.jpg"
-                                             alt="${prod.nombre}"
-                                             onerror="this.src='${pageContext.request.contextPath}/imagenes/imagen/productos/default.jpg'">
-                                    </a>
-                                    <div class="producto-info">
-                                        <h3>
-                                            <a href="${pageContext.request.contextPath}/FrontController?accion=verDetalle&idproducto=${prod.idproducto}">
-                                                ${prod.nombre}
-                                            </a>
-                                        </h3>
-                                        <p class="marca">${prod.marca}</p>
-                                        <p class="precio">
-                                            <fmt:formatNumber value="${prod.precio}" type="currency" currencySymbol="€"/>
-                                        </p>
+
+                                    <form method="post"
+                                          action="${pageContext.request.contextPath}/FrontController"
+                                          class="form-detalle-producto">
+                                        <input type="hidden" name="accion" value="verDetalle">
+                                        <input type="hidden" name="idproducto" value="${prod.idproducto}">
+
+                                        <button type="submit" class="producto-card-btn" title="Ver ${prod.nombre}">
+                                            <img src="${pageContext.request.contextPath}/imagenes/imagen/productos/${prod.imagen}.jpg"
+                                                 alt="${prod.nombre}"
+                                                 onerror="this.src='${pageContext.request.contextPath}/imagenes/imagen/productos/default.jpg'">
+                                        </button>
+
+                                        <div class="producto-info">
+                                            <h3>
+                                                <button type="submit" class="producto-card-btn"
+                                                        style="font-size:inherit; font-weight:inherit; color:inherit; text-align:left;">
+                                                    ${prod.nombre}
+                                                </button>
+                                            </h3>
+                                            <p class="marca">${prod.marca}</p>
+                                            <p class="precio">
+                                                <fmt:formatNumber value="${prod.precio}" type="number" pattern="#,##0.00"/>€
+                                            </p>
+                                        </div>
+                                    </form>
+
+                                    <div class="producto-info" style="padding-top:0;">
                                         <button type="button"
                                                 class="btn btn-add-cart"
                                                 onclick="anadirAlCarritoAjax(${prod.idproducto}, '${prod.nombre}')">
                                             🛒 Añadir al carrito
                                         </button>
                                     </div>
+
                                 </article>
                             </c:forEach>
                         </div>
