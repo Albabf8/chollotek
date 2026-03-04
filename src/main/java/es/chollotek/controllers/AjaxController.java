@@ -27,12 +27,26 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "AjaxController", urlPatterns = {"/AjaxController"})
 public class AjaxController extends HttpServlet {
 
+    /**
+     * Maneja las peticiones HTTP GET delegándolas al método procesarPeticion.
+     * * @param request La petición del cliente.
+     * @param response La respuesta al cliente.
+     * @throws ServletException Si ocurre un error específico del servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         procesarPeticion(request, response);
     }
 
+    /**
+     * Maneja las peticiones HTTP POST delegándolas al método procesarPeticion.
+     * * @param request La petición del cliente.
+     * @param response La respuesta al cliente.
+     * @throws ServletException Si ocurre un error específico del servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -83,6 +97,13 @@ public class AjaxController extends HttpServlet {
     // ═══════════════════════════════════════════════════
     // VALIDAR EMAIL
     // ═══════════════════════════════════════════════════
+    /**
+     * Verifica si un correo electrónico ya existe en la base de datos.
+     * Utilizado durante el registro para evitar duplicados en tiempo real.
+     * * @param request Petición que contiene el parámetro 'email'.
+     * @param response Respuesta JSON con el campo 'existe' (boolean) o 'error'.
+     * @throws IOException Si ocurre un error al escribir la respuesta JSON.
+     */
     private void validarEmail(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -116,6 +137,13 @@ public class AjaxController extends HttpServlet {
     // ═══════════════════════════════════════════════════
     // CALCULAR LETRA NIF
     // ═══════════════════════════════════════════════════
+    /**
+     * Calcula la letra correspondiente a un número de DNI introducido.
+     * Aplica el algoritmo oficial de división por 23.
+     * * @param request Petición que contiene el parámetro 'numeros' (8 dígitos).
+     * @param response Respuesta JSON con 'letra' y 'nifCompleto'.
+     * @throws IOException Si ocurre un error al escribir la respuesta JSON.
+     */
     private void calcularLetraNIF(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -147,11 +175,14 @@ public class AjaxController extends HttpServlet {
     // ═══════════════════════════════════════════════════
     // MODIFICAR CANTIDAD (SUMAR / RESTAR)
     // ═══════════════════════════════════════════════════
-    /**
-     * Incrementa o decrementa la cantidad de un producto en el carrito. Si la
-     * cantidad llega a 0 en una resta, elimina la línea automáticamente.
-     *
-     * * @param sumar true para incrementar, false para decrementar.
+/**
+     * Incrementa o decrementa la cantidad de un producto en el carrito.
+     * Maneja tanto carritos de usuarios registrados (en base de datos con transacciones)
+     * como carritos de usuarios anónimos (almacenados en la sesión HTTP).
+     * * @param request Petición con 'cantidadActual' y ('idlinea' para registrados o 'idproducto' para anónimos).
+     * @param response Respuesta JSON con 'exito', 'nuevaCantidad' o 'eliminado'.
+     * @param sumar true para incrementar la cantidad, false para disminuirla.
+     * @throws IOException Si ocurre un error al escribir la respuesta JSON.
      */
     private void modificarCantidadCarrito(HttpServletRequest request, HttpServletResponse response,
             boolean sumar) throws IOException {
@@ -266,6 +297,15 @@ public class AjaxController extends HttpServlet {
     // ═══════════════════════════════════════════════════
     // AÑADIR PRODUCTO AL CARRITO (AJAX) 
     // ═══════════════════════════════════════════════════
+    /**
+     * Añade un producto al carrito de la compra mediante una petición AJAX.
+     * Si el producto ya existe en el carrito, incrementa la cantidad.
+     * Gestiona la persistencia en base de datos para usuarios logueados y en sesión
+     * para usuarios anónimos.
+     * * @param request Petición que contiene 'idproducto' y opcionalmente 'cantidad'.
+     * @param response Respuesta JSON con el estado de la operación ('exito' o 'error').
+     * @throws IOException Si ocurre un error al escribir la respuesta JSON.
+     */
     private void anadirProductoAjax(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -397,6 +437,12 @@ public class AjaxController extends HttpServlet {
         }
     }
 
+    /**
+     * Utilidad para enviar mensajes de error formateados en JSON al cliente.
+     * * @param response El objeto de respuesta HTTP.
+     * @param mensaje El mensaje descriptivo del error.
+     * @throws IOException Si ocurre un error al escribir en el flujo de salida.
+     */
     private void enviarError(HttpServletResponse response, String mensaje) throws IOException {
         PrintWriter out = response.getWriter();
         out.print("{\"error\": \"" + mensaje + "\"}");

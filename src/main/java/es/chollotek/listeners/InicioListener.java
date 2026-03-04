@@ -64,6 +64,14 @@ public class InicioListener implements ServletContextListener {
         }
     }
 
+    /**
+     * Se ejecuta cuando la aplicación web se detiene o se desinstala del servidor.
+     * Registra el cierre de la aplicación en el log del servidor. Al utilizar un 
+     * Pool de conexiones gestionado por JNDI en Tomcat (Resource), no es necesario 
+     * liberar manualmente el DataSource en este punto, ya que el contenedor se 
+     * encarga de su ciclo de vida.
+     * * @param sce Objeto de evento que proporciona acceso al contexto de la aplicación.
+     */
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         sce.getServletContext().log("Chollotek cerrada. Pool gestionado por Tomcat.");

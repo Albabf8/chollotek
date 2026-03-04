@@ -22,6 +22,14 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "PedidoController", urlPatterns = {"/PedidoController"})
 public class PedidoController extends HttpServlet {
 
+    /**
+     * Procesa las peticiones POST para tramitar la compra o ver detalles.
+     * Utiliza un despachador para redirigir a la vista correspondiente tras la lógica.
+     * * @param request La petición HTTP con el parámetro 'accion'.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error interno en el servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -47,6 +55,14 @@ public class PedidoController extends HttpServlet {
         request.getRequestDispatcher(url).forward(request, response);
     }
 
+    /**
+     * Gestiona peticiones GET, principalmente para redirecciones de seguridad.
+     * Si se intenta acceder a detalles por GET, redirige al listado general de pedidos.
+     * * @param request La petición HTTP.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error interno en el servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -66,6 +82,13 @@ public class PedidoController extends HttpServlet {
     // ═══════════════════════════════════════════════════════════════════════
     // VER DETALLE DE UN PEDIDO
     // ═══════════════════════════════════════════════════════════════════════
+    /**
+     * Recupera la información completa de un pedido específico para su visualización.
+     * Incluye una validación de seguridad para confirmar que el pedido pertenece al 
+     * usuario logueado. Calcula subtotales, IVA (21%) y total para la vista.
+     * * @param request La petición con el parámetro 'idpedido'.
+     * @return La URL de la vista de detalle ("JSP/detallePedido.jsp") o la lista de pedidos en caso de error.
+     */
     private String accionVerDetalle(HttpServletRequest request) {
 
         Connection con = null;
@@ -147,6 +170,14 @@ public class PedidoController extends HttpServlet {
     // ═══════════════════════════════════════════════════════════════════════
     // TRAMITAR PEDIDO
     // ═══════════════════════════════════════════════════════════════════════
+    /**
+     * Finaliza el proceso de compra convirtiendo el carrito actual en un pedido cerrado.
+     * Actualiza el importe final e IVA en la base de datos, cambia el estado del pedido 
+     * de 'c' (carrito) a 'f' (finalizado) y registra la fecha actual.
+     * Utiliza transacciones para asegurar la integridad de la operación.
+     * * @param request La petición HTTP para identificar al usuario y su sesión.
+     * @return La URL de confirmación de pedido o el carrito en caso de error.
+     */
     private String accionTramitarPedido(HttpServletRequest request) {
 
         Connection con = null;

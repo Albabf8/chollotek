@@ -33,8 +33,18 @@ import org.apache.commons.beanutils.BeanUtils;
 )
 public class RegistroController extends HttpServlet {
 
+    /** Nombre del directorio donde se almacenarán físicamente los avatares subidos */
     private static final String UPLOAD_DIRECTORY = "avatares";
 
+    /**
+     * Procesa la solicitud de registro enviada mediante el método POST.
+     * Coordina la validación de contraseñas, encriptación, almacenamiento de avatar,
+     * inserción en base de datos y la creación de la sesión de usuario.
+     * * @param request La petición HTTP que contiene los datos del formulario de registro.
+     * @param response La respuesta HTTP para redirección o gestión de errores.
+     * @throws ServletException Si ocurre un error específico del servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -118,11 +128,15 @@ public class RegistroController extends HttpServlet {
         response.sendRedirect(url);
     }
 
-    /**
-     * Traspasa el carrito anónimo a BD al registrarse. Como es la primera vez,
-     * simplemente crea un carrito nuevo con esos productos.
+/**
+     * Traspasa el carrito de compra anónimo a la base de datos tras el registro.
+     * Crea un nuevo pedido con estado 'carrito' ('c') vinculado al nuevo usuario e 
+     * inserta todas las líneas de producto correspondientes.
+     * * @param carritoAnonimo Lista de líneas de pedido almacenadas previamente en la sesión.
+     * @param usuario El objeto del usuario recién registrado.
+     * @param con Conexión JDBC activa bajo control de transacción.
+     * @throws Exception Si ocurre un error durante la inserción de datos.
      */
-
     private void traspasarCarritoAnonimo(List<LineaPedido> carritoAnonimo,
             Usuario usuario, Connection con) throws Exception {
 
@@ -146,10 +160,13 @@ public class RegistroController extends HttpServlet {
     }
 
     /**
-     * Gestiona la recepción y almacenamiento físico de la imagen.
-     * Genera un nombre de archivo único usando un timestamp para evitar 
-     * sobreescrituras si dos usuarios suben una foto llamada "foto.jpg".
-     * @return El nombre del archivo guardado o {@code null} si no se subió ningún archivo.
+     * Gestiona la recepción y almacenamiento físico de la imagen de avatar.
+     * Genera un nombre de archivo único utilizando un timestamp para evitar 
+     * conflictos de nombres entre diferentes usuarios.
+     * * @param request La petición HTTP que contiene el objeto Part 'avatar'.
+     * @return El nombre del archivo guardado o null si no se proporcionó ninguna imagen.
+     * @throws IOException Si ocurre un error al escribir el archivo en el disco.
+     * @throws ServletException Si la petición no es multipart/form-data.
      */
     private String procesarAvatar(HttpServletRequest request)
             throws IOException, ServletException {
@@ -172,6 +189,13 @@ public class RegistroController extends HttpServlet {
         return uniqueFileName;
     }
 
+    /**
+     * Redirige las peticiones GET al método doPost para unificar la lógica de registro.
+     * * @param request La petición HTTP.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error en el servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

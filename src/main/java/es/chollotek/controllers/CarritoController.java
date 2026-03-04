@@ -27,6 +27,14 @@ public class CarritoController extends HttpServlet {
 
     private static final BigDecimal IVA = new BigDecimal("0.21");
 
+    /**
+     * Procesa las peticiones de modificación del carrito enviadas mediante el método POST.
+     * Coordina las acciones de añadir, sumar, restar, eliminar y vaciar basándose en el parámetro 'accion'.
+     * * @param request La petición HTTP.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error interno en el servlet.
+     * @throws IOException Si ocurre un error de entrada/salida al redirigir.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -60,9 +68,14 @@ public class CarritoController extends HttpServlet {
         response.sendRedirect(url);
     }
 
-    /**
-     * Añade un producto al carrito. Si el usuario está logueado, lo guarda en
-     * BD. Si es anónimo, lo guarda en sesión con cookie de 2 días.
+/**
+     * Añade una unidad de un producto al carrito.
+     * Si el usuario está registrado, crea o recupera un pedido en estado 'carrito' ('c') en la BD.
+     * Si el usuario es anónimo, almacena el producto en una lista en la sesión y establece 
+     * una cookie de persistencia por 48 horas.
+     * * @param request La petición con el parámetro 'idproducto'.
+     * @param response La respuesta para añadir la cookie en caso de usuario anónimo.
+     * @return La URL de redirección hacia la vista del carrito.
      */
     private String accionAnadir(HttpServletRequest request, HttpServletResponse response) {
         Connection con = null;
@@ -166,8 +179,9 @@ public class CarritoController extends HttpServlet {
     }
 
     /**
-     * Aumenta la cantidad de un producto en el carrito. Para usuario logueado:
-     * actualiza en BD. Para usuario anónimo: actualiza en sesión.
+     * Incrementa en una unidad la cantidad de un producto ya existente en el carrito.
+     * * @param request La petición con 'idlinea' (para BD) o 'idproducto' (para sesión).
+     * @return La URL de redirección hacia la vista del carrito.
      */
     private String accionSumarCantidad(HttpServletRequest request) {
         Connection con = null;
@@ -233,9 +247,12 @@ public class CarritoController extends HttpServlet {
         return "FrontController?accion=verCarrito";
     }
 
-    /**
-     * Disminuye la cantidad de un producto en el carrito. Solo permite
-     * decrementar si la cantidad resultante es >= 1.
+/**
+     * Disminuye en una unidad la cantidad de un producto en el carrito.
+     * Solo realiza la acción si la cantidad actual es superior a 1 para evitar cantidades nulas o negativas.
+     * * @param request La petición con 'idlinea' o 'idproducto'.
+     * @param response La respuesta HTTP.
+     * @return La URL de redirección hacia la vista del carrito.
      */
     private String accionRestarCantidad(HttpServletRequest request, HttpServletResponse response) {
         Connection con = null;
@@ -310,7 +327,9 @@ public class CarritoController extends HttpServlet {
     }
 
     /**
-     * Elimina un producto del carrito.
+     * Elimina completamente un producto (o línea de pedido) del carrito.
+     * * @param request La petición con los identificadores necesarios.
+     * @return La URL de redirección hacia la vista del carrito.
      */
     private String accionEliminarProducto(HttpServletRequest request) {
         Connection con = null;
@@ -372,8 +391,11 @@ public class CarritoController extends HttpServlet {
         return "FrontController?accion=verCarrito";
     }
 
-    /**
-     * Vacía el carrito por completo.
+/**
+     * Vacía el carrito por completo. Para usuarios registrados elimina el pedido y 
+     * sus líneas de la BD; para anónimos limpia el atributo de sesión.
+     * * @param request La petición HTTP.
+     * @return La URL de redirección hacia la vista del carrito.
      */
     private String accionVaciarCarrito(HttpServletRequest request) {
         Connection con = null;
@@ -419,11 +441,12 @@ public class CarritoController extends HttpServlet {
     }
 
 /**
-     * Recalcula el importe total y el IVA de un pedido basándose en sus líneas.
+     * Recalcula el importe total (base imponible) y el IVA de un pedido basándose 
+     * en el precio actual de los productos y las cantidades en las líneas de pedido.
      * Actualiza el registro del pedido en la base de datos.
-     * * @param idPedido ID del pedido a recalcular.
-     * @param con Conexión JDBC activa.
-     * @throws Exception Si falla la consulta o actualización.
+     * * @param idPedido El ID del pedido/carrito a recalcular.
+     * @param con Conexión JDBC activa bajo transacción.
+     * @throws Exception Si ocurre un error en la consulta o actualización.
      */
     private void recalcularImporteCarrito(int idPedido, Connection con) throws Exception {
         MySQLDAOFactory factory = MySQLDAOFactory.getInstancia();
@@ -448,6 +471,13 @@ public class CarritoController extends HttpServlet {
         pedidoDAO.actualizar(pedido, con);
     }
 
+    /**
+     * Redirige las peticiones GET al método doPost para centralizar la lógica.
+     * * @param request La petición HTTP.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error en el servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

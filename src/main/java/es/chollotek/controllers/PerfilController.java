@@ -30,8 +30,17 @@ import org.apache.commons.beanutils.BeanUtils;
 )
 public class PerfilController extends HttpServlet {
 
+    //Directorio físico donde se almacenarán las imágenes de avatar
     private static final String UPLOAD_DIRECTORY = "avatares";
 
+    /**
+     * Procesa las peticiones POST delegando la lógica según el parámetro 'accion'.
+     * Permite actualizar los datos básicos del perfil o proceder al cambio de contraseña.
+     * * @param request La petición HTTP con los datos del formulario.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error interno en el servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -49,16 +58,13 @@ public class PerfilController extends HttpServlet {
         request.getRequestDispatcher(url).forward(request, response);
     }
 
-    /**
-     * Actualiza los datos editables del perfil. No se puede cambiar email ni
-     * NIF.
-     */
-    /**
-     * Procesa la edición de datos del usuario y la subida de un nuevo avatar.
-     * Tras la actualización, se refresca el objeto de sesión con los datos
-     * limpios de la base de datos.
-     *
-     * @return URL de destino.
+/**
+     * Procesa la actualización de los datos editables del usuario y la subida de avatar.
+     * Implementa el requisito de no permitir el cambio de Email ni NIF. Utiliza transacciones
+     * para asegurar la persistencia y refresca el objeto de usuario en la sesión HTTP
+     * tras la operación exitosa.
+     * * @param request La petición HTTP con los campos del perfil y el archivo Part 'avatar'.
+     * @return URL de retorno a la vista de perfil ("JSP/perfil.jsp") con mensajes de estado.
      */
     private String accionActualizarPerfil(HttpServletRequest request) {
         Connection con = null;
@@ -131,12 +137,12 @@ public class PerfilController extends HttpServlet {
         return "JSP/perfil.jsp";
     }
 
-    /**
-     * Realiza el cambio de contraseña. Compara el hash MD5 de la contraseña
-     * actual introducida con el almacenado en el objeto de sesión antes de
-     * proceder al cambio. Ambas contraseñas nuevas deben ser idénticas.
-     *
-     * @return URL de retorno al formulario de perfil con mensajes de estado.
+ /**
+     * Realiza el cambio de contraseña del usuario validando la seguridad.
+     * Compara el hash MD5 de la contraseña actual introducida con el almacenado.
+     * Exige que las dos repeticiones de la nueva contraseña sean idénticas.
+     * * @param request La petición con 'passwordActual', 'passwordNueva' y 'passwordNueva2'.
+     * @return URL de retorno a la vista de perfil ("JSP/perfil.jsp") con mensajes de estado.
      */
     private String accionCambiarPassword(HttpServletRequest request) {
         Connection con = null;
@@ -203,6 +209,13 @@ public class PerfilController extends HttpServlet {
         return "JSP/perfil.jsp";
     }
 
+    /**
+     * Redirige las peticiones GET al método doPost para unificar la gestión de peticiones.
+     * * @param request La petición HTTP.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error en el servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

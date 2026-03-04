@@ -24,6 +24,15 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "LoginController", urlPatterns = {"/LoginController"})
 public class LoginController extends HttpServlet {
 
+    /**
+     * Procesa las peticiones de inicio de sesión mediante el método POST.
+     * Valida el email y la contraseña (MD5), actualiza la fecha de último acceso
+     * y gestiona la transferencia del carrito de la sesión a la base de datos.
+     * * @param request La petición HTTP con credenciales y parámetro de origen.
+     * @param response La respuesta HTTP para redirección o gestión de cookies.
+     * @throws ServletException Si ocurre un error interno en el servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -36,6 +45,7 @@ public class LoginController extends HttpServlet {
             String email = request.getParameter("email");
             String password = request.getParameter("password");
 
+            // Validación de campos obligatorios
             if (email == null || email.trim().isEmpty()
                     || password == null || password.trim().isEmpty()) {
                 request.setAttribute("mensajeError", "Todos los campos son obligatorios.");
@@ -51,6 +61,7 @@ public class LoginController extends HttpServlet {
 
             Usuario usuario = dao.buscarPorEmail(email.trim(), con);
 
+            // Validación de existencia de usuario
             if (usuario == null) {
                 request.setAttribute("mensajeError", "Email o contraseña incorrectos.");
                 request.setAttribute("emailIntroducido", email);
@@ -59,6 +70,7 @@ public class LoginController extends HttpServlet {
                 return;
             }
 
+            // Validación de contraseña encriptada
             String passwordMD5 = MD5.encriptar(password);
             if (!usuario.getPassword().equals(passwordMD5)) {
                 request.setAttribute("mensajeError", "Email o contraseña incorrectos.");
@@ -116,10 +128,14 @@ public class LoginController extends HttpServlet {
         response.sendRedirect(url);
     }
 
-    /**
-     * Fusiona el carrito anónimo con el carrito del usuario en BD.
-     * Si el usuario no tiene carrito en BD, crea uno nuevo.
-     * Si ya tiene carrito, suma las cantidades de productos coincidentes.
+/**
+     * Fusiona el carrito almacenado en la sesión con el carrito del usuario en la base de datos.
+     * Si el usuario no posee un pedido abierto (estado 'c'), se crea uno nuevo.
+     * En caso de productos coincidentes, se suman las cantidades.
+     * * @param carritoAnonimo Lista de líneas de pedido recuperadas de la sesión.
+     * @param usuario El objeto usuario autenticado.
+     * @param con Conexión JDBC activa bajo transacción.
+     * @throws Exception Si ocurre un error en la persistencia de datos.
      */
     private void traspasarCarritoAnonimo(List<LineaPedido> carritoAnonimo,
             Usuario usuario, Connection con) throws Exception {
@@ -153,6 +169,13 @@ public class LoginController extends HttpServlet {
         }
     }
 
+    /**
+     * Redirige las peticiones GET al método doPost para unificar la lógica de acceso.
+     * * @param request La petición HTTP.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error en el servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

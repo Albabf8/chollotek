@@ -26,12 +26,28 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "FrontController", urlPatterns = {"/FrontController"})
 public class FrontController extends HttpServlet {
 
+    /**
+     * Gestiona las peticiones GET redirigiéndolas al método doPost.
+     * * @param request La petición HTTP.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error específico del servlet.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         doPost(request, response);
     }
 
+    /**
+     * Método principal que procesa todas las peticiones POST y GET.
+     * Analiza el parámetro 'accion' para determinar el flujo de navegación
+     * y despacha la petición al recurso o controlador correspondiente.
+     * * @param request La petición HTTP.
+     * @param response La respuesta HTTP.
+     * @throws ServletException Si ocurre un error en el despacho de la petición.
+     * @throws IOException Si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -111,6 +127,12 @@ public class FrontController extends HttpServlet {
         request.getRequestDispatcher(url).forward(request, response);
     }
 
+    /**
+     * Prepara los datos para la página de inicio.
+     * Obtiene una selección aleatoria de productos para mostrar como destacados.
+     * * @param request La petición HTTP donde se guardará la lista de productos.
+     * @return La URL de la página de inicio ("inicio.jsp").
+     */
     private String accionInicio(HttpServletRequest request) {
         Connection con = null;
         try {
@@ -128,6 +150,12 @@ public class FrontController extends HttpServlet {
         return "inicio.jsp";
     }
 
+    /**
+     * Gestiona el filtrado avanzado de productos.
+     * Permite filtrar por categoría, marca, nombre y rango de precios.
+     * * @param request La petición HTTP con los parámetros de filtrado.
+     * @return La URL de la página de resultados ("JSP/resultados.jsp").
+     */
     private String accionFiltrar(HttpServletRequest request) {
         Connection con = null;
         try {
@@ -184,6 +212,11 @@ public class FrontController extends HttpServlet {
         return "JSP/resultados.jsp";
     }
 
+    /**
+     * Procesa la búsqueda rápida de productos por texto.
+     * * @param request La petición HTTP con el parámetro 'textoBusqueda'.
+     * @return La URL de la página de resultados ("JSP/resultados.jsp").
+     */
     private String accionBuscar(HttpServletRequest request) {
         Connection con = null;
         try {
@@ -217,12 +250,11 @@ public class FrontController extends HttpServlet {
         return "JSP/resultados.jsp";
     }
 
-    /**
-     * Muestra el contenido del carrito del usuario. Carga las líneas con los
-     * productos completos para mostrar en la vista.
-     *
-     * @param request petición HTTP
-     * @return URL de la vista del carrito
+/**
+     * Recupera y muestra el contenido del carrito del usuario.
+     * Para usuarios registrados, carga las líneas y los detalles completos de cada producto desde la BD.
+     * * @param request La petición HTTP para acceder a la sesión y atributos de vista.
+     * @return La URL de la vista del carrito ("JSP/carrito.jsp").
      */
     private String accionVerCarrito(HttpServletRequest request) {
         Connection con = null;
@@ -259,7 +291,7 @@ public class FrontController extends HttpServlet {
             // 5. Obtener líneas del carrito
             List<LineaPedido> lineas = lineaDAO.listarPorPedido(carrito.getIdpedido(), con);
 
-            // 6. ✅ CARGAR PRODUCTOS COMPLETOS EN CADA LÍNEA
+            // 6. CARGAR PRODUCTOS COMPLETOS EN CADA LÍNEA
             for (LineaPedido linea : lineas) {
                 Producto producto = productoDAO.buscarPorId(linea.getIdproducto(), con);
                 linea.setProducto(producto);
@@ -279,6 +311,11 @@ public class FrontController extends HttpServlet {
         return "JSP/carrito.jsp";
     }
 
+    /**
+     * Verifica la autenticación antes de permitir la tramitación de un pedido.
+     * * @param request La petición HTTP para validar la sesión del usuario.
+     * @return El controlador de pedidos o la página de login si no está autenticado.
+     */
     private String accionTramitarPedido(HttpServletRequest request) {
         HttpSession sesion = request.getSession(false);
 
@@ -291,6 +328,12 @@ public class FrontController extends HttpServlet {
         return "PedidoController";
     }
 
+    /**
+     * Prepara la ficha detallada de un producto.
+     * Carga los datos del producto, su categoría y una lista de productos relacionados.
+     * * @param request La petición HTTP con el parámetro 'idproducto'.
+     * @return La URL de la página de detalle ("JSP/detalleProducto.jsp").
+     */
     private String accionVerDetalle(HttpServletRequest request) {
         Connection con = null;
         try {
@@ -348,6 +391,11 @@ public class FrontController extends HttpServlet {
         return "JSP/detalleProducto.jsp";
     }
     
+    /**
+     * Recupera el historial de pedidos finalizados del usuario actual.
+     * * @param request La petición HTTP para obtener el ID del usuario logueado.
+     * @return La URL de la vista de pedidos ("JSP/pedidos.jsp").
+     */
     private String accionVerPedidos(HttpServletRequest request) {
     Connection con = null;
     try {
