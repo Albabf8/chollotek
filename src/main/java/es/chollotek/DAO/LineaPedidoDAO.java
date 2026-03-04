@@ -23,7 +23,7 @@ public interface LineaPedidoDAO {
      * 2) Usuario añade producto que ya estaba en carrito: - Se suma la nueva
      * cantidad a la existente
      *
-     * IMPORTANTE: - La cantidad DEBE ser >= 1 (si es 0 hay que eliminar la
+     * IMPORTANTE: - La cantidad DEBE ser mayor o igual a 1 (si es 0 hay que eliminar la
      * línea) - Debe ejecutarse en la misma transacción que actualizar el
      * importe del pedido
      *

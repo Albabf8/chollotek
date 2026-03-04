@@ -112,7 +112,7 @@ public interface PedidoDAO {
      * @param con conexión activa (DEBE estar en transacción para rollback si
      * falla)
      * @return idpedido generado automáticamente por la base de datos
-     * @throws SQLException si hay error al insertar o no se puede obtener el ID
+     * @throws Exception si hay error al insertar o no se puede obtener el ID
      * generado
      */
     int insertar(Pedido pedido, Connection con) throws Exception;

@@ -1,0 +1,62 @@
+-J-Duser.language=
+-J-Duser.country=
+@options
+@packages
+-classpath
+'C:/Users/Alba/.m2/repository/javax/javaee-web-api/7.0/javaee-web-api-7.0.jar;C:/Users/Alba/.m2/repository/com/mysql/mysql-connector-j/8.3.0/mysql-connector-j-8.3.0.jar;C:/Users/Alba/.m2/repository/com/google/protobuf/protobuf-java/3.25.1/protobuf-java-3.25.1.jar;C:/Users/Alba/.m2/repository/jstl/jstl/1.2/jstl-1.2.jar;C:/Users/Alba/.m2/repository/commons-beanutils/commons-beanutils/1.8.3/commons-beanutils-1.8.3.jar;C:/Users/Alba/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar'
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'G:/Mi unidad/DAW/Servidor/chollotek/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2026. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'G:/Mi unidad/DAW/Servidor/chollotek/target/reports/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'chollotek 1.0 API'
+-linkoffline
+'https://docs.oracle.com/javase/7/docs/api' 'G:/Mi unidad/DAW/Servidor/chollotek/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'chollotek 1.0 API'
+es.chollotek.DAO
+es.chollotek.controllers
+es.chollotek.DAOFactory
+es.chollotek.filters
+es.chollotek.models
+es.chollotek.beans
+es.chollotek.listeners
+C:\Users\Alba\.m2\repository\javax\javaee-web-api\7.0\javaee-web-api-7.0.jar = 1758654389554
+C:\Users\Alba\.m2\repository\com\mysql\mysql-connector-j\8.3.0\mysql-connector-j-8.3.0.jar = 1768580308992
+C:\Users\Alba\.m2\repository\com\google\protobuf\protobuf-java\3.25.1\protobuf-java-3.25.1.jar = 1768580310152
+C:\Users\Alba\.m2\repository\jstl\jstl\1.2\jstl-1.2.jar = 1763741908618
+C:\Users\Alba\.m2\repository\commons-beanutils\commons-beanutils\1.8.3\commons-beanutils-1.8.3.jar = 1769984475332
+C:\Users\Alba\.m2\repository\commons-logging\commons-logging\1.1.1\commons-logging-1.1.1.jar = 1734464309610
+G:\Mi unidad\DAW\Servidor\chollotek\src\main\java = 1771339210253
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\element-list = 1772641110198
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\constant-values.html = 1772641111205
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\serialized-form.html = 1772641111250
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\overview-tree.html = 1772641112976
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\package-search-index.js = 1772641113085
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\type-search-index.js = 1772641113134
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\member-search-index.js = 1772641113181
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\index-all.html = 1772641113234
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\allclasses-index.html = 1772641113299
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\allpackages-index.html = 1772641113335
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\deprecated-list.html = 1772641113388
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\allclasses.html = 1772641113426
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\index.html = 1772641113467
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\overview-summary.html = 1772641113509
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\help-doc.html = 1772641113557
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\stylesheet.css = 1772641113601
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\script.js = 1772641113638
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\search.js = 1772641113714
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\jquery-ui.overrides.css = 1772641114184
+G:\Mi unidad\DAW\Servidor\chollotek\target\reports\apidocs\javadoc.bat = 1772641041551
